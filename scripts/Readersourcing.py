@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[28]:
+# In[2]:
 
 
 import pandas as pd
@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "ground_truth_1"
+dataset_name = "seed_2"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -47,14 +47,14 @@ papers = np.arange(papers_number)
 readers = np.arange(readers_number)
 ratings = np.arange(ratings_number)
 authors = np.arange(authors_number)
-paper_steadiness = np.zeros(papers_number,dtype=np.float16)
-paper_score = np.zeros(papers_number,dtype=np.float16)
-rating_goodness = np.zeros(ratings_number,dtype=np.float16)
-reader_steadiness = np.zeros(readers_number,dtype=np.float16)
-reader_score = np.zeros(readers_number,dtype=np.float16)
+paper_steadiness = np.zeros(papers_number)
+paper_score = np.zeros(papers_number)
+rating_goodness = np.zeros(ratings_number)
+reader_steadiness = np.zeros(readers_number)
+reader_score = np.zeros(readers_number)
 reader_score.fill(epsilon)
-author_steadiness = np.zeros(authors_number, dtype=np.float16)
-author_score = np.zeros(authors_number, dtype=np.float16)
+author_steadiness = np.zeros(authors_number)
+author_score = np.zeros(authors_number)
 
 start_time = time.time()
 
@@ -161,6 +161,8 @@ def serialize_result(current_index, verbose):
 
 # There are many "print" that you can uncomment if you have to do some debugging
 # print("##########")
+
+print("0/0 (0/100%)")
 
 for index in range(csv_offset, (ratings_number + csv_offset)):
     
@@ -287,7 +289,7 @@ elapsed_time = serialize_result(ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[29]:
+# In[3]:
 
 
 # Summary

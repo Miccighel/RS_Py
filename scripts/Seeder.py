@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[21]:
+# In[4]:
 
 
 import pandas as pd
@@ -16,8 +16,13 @@ import scipy as sp
 from scipy.stats import truncnorm as tn
 
 # Quantities in an year of activity
-papers_number = 150000
-readers_number = 2000
+# papers_number = 15000
+# readers_number = 2000
+#authors_number = 50
+
+# Quantities in an year of activity
+papers_number = 1500
+readers_number = 200
 authors_number = 50
 
 papers = np.arange(papers_number)
@@ -26,7 +31,7 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_1"
+dataset_name = "seed_2"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_file_path = f"{dataset_folder_path}info.csv"
 ratings_file_path = f"{dataset_folder_path}ratings.csv"
@@ -41,7 +46,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[22]:
+# In[5]:
 
 
 
@@ -61,7 +66,7 @@ print(f"{papers_number}/{papers_number} (100/100%)")
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[23]:
+# In[6]:
 
 
 
@@ -71,7 +76,7 @@ print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 readers_percent = 20
 reader_sets_number = m.floor(100 / readers_percent)
-readers_amount = round((readers_number*readers_percent)/100)
+readers_amount = m.floor((readers_number*readers_percent)/100)
 
 readers_set = set(readers)
 readers_sets = []
@@ -124,7 +129,7 @@ ratings_file.close()
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[24]:
+# In[7]:
 
 
 
@@ -153,7 +158,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[25]:
+# In[8]:
 
 
 
@@ -164,7 +169,7 @@ print("---------- INFO GENERATION STARTED ----------")
 info_dataframe = pd.DataFrame(columns=["Dataset", "Paper", "Reader", "Rating", "Author"])
 info_dataframe = info_dataframe.append(
     {
-        "Dataset": dataset_name.capitalize(), 
+        "Dataset": dataset_name, 
         "Paper": papers_number, 
         "Reader": readers_number, 
         "Rating": ratings_number, 
