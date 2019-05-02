@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[9]:
+
 
 
 import pandas as pd
@@ -21,9 +22,9 @@ from scipy.stats import truncnorm as tn
 #authors_number = 50
 
 # Quantities in an year of activity
-papers_number = 1500
-readers_number = 200
-authors_number = 50
+papers_number = 1100
+readers_number = 20
+authors_number = 25
 
 papers = np.arange(papers_number)
 readers = np.arange(readers_number)
@@ -31,7 +32,7 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_2"
+dataset_name = "seed_3"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_file_path = f"{dataset_folder_path}info.csv"
 ratings_file_path = f"{dataset_folder_path}ratings.csv"
@@ -46,7 +47,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[5]:
+# In[10]:
 
 
 
@@ -66,7 +67,7 @@ print(f"{papers_number}/{papers_number} (100/100%)")
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[6]:
+# In[11]:
 
 
 
@@ -129,7 +130,7 @@ ratings_file.close()
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[7]:
+# In[12]:
 
 
 
@@ -158,7 +159,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[8]:
+# In[13]:
 
 
 

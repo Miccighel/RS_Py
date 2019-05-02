@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[11]:
+# In[12]:
 
 
 import pandas as pd
@@ -18,7 +18,7 @@ np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
 
 # CSV file parsing
 
-dataset_name = "ground_truth_1"
+dataset_name = "ground_truth_2"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_filename = f"{dataset_folder_path}info.csv"
 ratings_filename = f"{dataset_folder_path}ratings.csv"
@@ -57,12 +57,16 @@ def logistic_function(value):
 
 start_time = time.time()
 
-for current_paper in papers:
+for index_paper, current_paper in enumerate(papers):
 
-    print(f"---------- CURRENT PAPER: {current_paper} ----------")
+    # print(f"---------- CURRENT PAPER: {current_paper} ----------")
 
     current_paper_ratings = []
     ratings_sum = 0
+    
+    percentage = 100*index_paper/len(papers)
+    if percentage % 10 == 0:
+        print(f"{int(index_paper)}/{len(papers)} ({int(percentage)}/100%)")
     
     # For each paper, consider only its ratings and throw away the other ones
     
@@ -89,9 +93,6 @@ for current_paper in papers:
         paper = int(entry[2])
         rating = entry[3]
         
-        percentage = 100*index/ratings_number
-        if percentage % 10 == 0:
-            print(f"{int(index)}/{ratings_number} ({int(percentage)}/100%)")
         # print("---------- CURRENT ENTRY ----------")
         # print(f"TIMESTAMP {timestamp} - READER {reader} - PAPER {paper} - SCORE {rating}")
     
@@ -139,7 +140,7 @@ for current_paper in papers:
     
     paper_score[current_paper] = ratings_sum / len(current_paper_ratings)
     
-    print(f"{int(ratings_number)}/{ratings_number} (100/100%)")
+print(f"{len(papers)}/{len(papers)} (100/100%)")
     
 elapsed_time = time.time() - start_time    
 print("--------------------")
@@ -147,7 +148,7 @@ print("ELAPSED TIME: ", elapsed_time)
     
 
 
-# In[12]:
+# In[13]:
 
 
 # Summary

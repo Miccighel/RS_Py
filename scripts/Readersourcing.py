@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[8]:
 
 
 import pandas as pd
@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "seed_2"
+dataset_name = "ground_truth_2"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -76,6 +76,7 @@ def get_author(current_paper) :
 def serialize_result(current_index, verbose):
     
     result_folder_path = "../models/{}/".format(dataset_name)
+    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
 
     # Quantities output handling
 
@@ -89,8 +90,7 @@ def serialize_result(current_index, verbose):
     ]
     
     result_quantities_filename = "{}readersourcing/quantities.json".format(result_folder_path)
-    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
-    
+        
     if verbose:
         print("PRINTING QUANTITIES TO .JSON FILE AT PATH {}".format(result_quantities_filename))
     
@@ -118,10 +118,8 @@ def serialize_result(current_index, verbose):
         goodness_matrix[current_reader][current_paper] = rating_goodness[timestamp]
     
     result_ratings_filename = "{}readersourcing/ratings.csv".format(result_folder_path)
-    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
     
     result_goodness_filename = "{}readersourcing/goodness.csv".format(result_folder_path)
-    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
     
     if verbose:
         print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -148,7 +146,6 @@ def serialize_result(current_index, verbose):
     dictionary = [{'Time': result_elapsed_time}]
     
     result_info_filename = "{}readersourcing/info.json".format(result_folder_path)
-    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
     
     if verbose:
         print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -289,7 +286,7 @@ elapsed_time = serialize_result(ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[3]:
+# In[9]:
 
 
 # Summary
