@@ -103,11 +103,3 @@ venv.bak/
 # mypy
 .mypy_cache/
 .idea/workspace.xml
-models/seed_4/readersourcing/ratings.csv
-models/seed_4/readersourcing/quantities.json
-models/seed_4/readersourcing/goodness.csv
-models/seed_3/readersourcing/ratings.csv
-models/seed_3/readersourcing/quantities.json
-models/seed_3/readersourcing/info.json
-models/seed_3/readersourcing/goodness.csv
-models/seed_4/readersourcing/info.json
