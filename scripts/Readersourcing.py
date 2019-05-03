@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[ ]:
 
 
 import pandas as pd
@@ -13,8 +13,6 @@ import numpy as np
 import os
 import json
 import time
-
-np.set_printoptions(formatter={'float': lambda x: "{0:0.8f}".format(x)})
 
 # Reader score must be set to a very small value otherwise there will be a division by 0
 
@@ -228,6 +226,7 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         author_score[author] = ((old_author_steadiness * old_author_score) + (old_reader_score * rating)) / author_steadiness[author]
 
     # COMPUTATION START: PROPAGATING CHANGES TO PREVIOUS READERS
+    # COMPUTATION START: PROPAGATING CHANGES TO PREVIOUS READERS
         
     previous_ratings = []        
     with open(ratings_filename) as rating_file:
@@ -235,7 +234,7 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         raw_previous_ratings.popleft()
     rating_file.close()
     for raw_previous_rating in raw_previous_ratings:
-        previous_rating = np.array(raw_previous_rating.split(","), dtype=np.float16)
+        previous_rating = np.array(raw_previous_rating.split(","))
         previous_ratings.append(previous_rating)
     previous_ratings = np.array(previous_ratings)
     previous_paper_ratings = previous_ratings[
@@ -253,6 +252,11 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         previous_reader = int(previous_entry[1])
         previous_paper = int(previous_entry[2])
         previous_rating = previous_entry[3]
+                
+        if previous_timestamp == 799:
+            print(previous_entry)
+            print(paper_ratings.head(800))
+            print(previous_reader)
 
         # print(f"PREVIOUS TIMESTAMP {previous_timestamp} - PREVIOUS READER {previous_reader} - PREVIOUS PAPER {previous_paper} - PREVIOUS RATING {previous_rating}")
 
@@ -287,7 +291,7 @@ elapsed_time = serialize_result(ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[3]:
+# In[ ]:
 
 
 # Summary
