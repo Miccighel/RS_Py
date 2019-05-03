@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[167]:
 
 
 
@@ -16,14 +16,10 @@ from matplotlib import pyplot as plt
 import scipy as sp
 from scipy.stats import truncnorm as tn
 
-# Quantities in an year of activity
-# papers_number = 15000
-# readers_number = 2000
-#authors_number = 50
+# Quantities to seed
 
-# Quantities in an year of activity
-papers_number = 1100
-readers_number = 20
+papers_number = 5000
+readers_number = 2500
 authors_number = 25
 
 papers = np.arange(papers_number)
@@ -32,7 +28,7 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_3"
+dataset_name = "seed_2/p_1"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_file_path = f"{dataset_folder_path}info.csv"
 ratings_file_path = f"{dataset_folder_path}ratings.csv"
@@ -47,7 +43,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[10]:
+# In[168]:
 
 
 
@@ -67,7 +63,7 @@ print(f"{papers_number}/{papers_number} (100/100%)")
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[11]:
+# In[169]:
 
 
 
@@ -82,13 +78,9 @@ readers_amount = m.floor((readers_number*readers_percent)/100)
 readers_set = set(readers)
 readers_sets = []
 
-# Readers of set 0 rate 1 paper every two weeks
-# Readers of set 1 rate 1 paper every week
-# Readers of set 2 rate 2 papers every week
-# Readers of set 3 rate 1 paper every day
-# Readers of set 4 rate 3 papers every day
+# Readers rate papers with a certain frequence
 
-paper_frequencies = [26, 52, 104, 365, 1098]
+paper_frequencies = [2, 4, 8, 30, 90]
 
 print("---------- READERS SETS GENERATION STARTED ----------")
 
@@ -130,7 +122,7 @@ ratings_file.close()
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[12]:
+# In[170]:
 
 
 
@@ -159,7 +151,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[13]:
+# In[171]:
 
 
 

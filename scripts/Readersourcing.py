@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[ ]:
 
 
 import pandas as pd
@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "ground_truth_2"
+dataset_name = "seed_2/r_1"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
