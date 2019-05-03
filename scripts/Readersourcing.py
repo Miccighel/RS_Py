@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[3]:
 
 
 import pandas as pd
@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "seed_2/r_1"
+dataset_name = "seed_2/r_2"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -162,7 +162,7 @@ def serialize_result(current_index, verbose):
 print("0/0 (0/100%)")
 
 for index in range(csv_offset, (ratings_number + csv_offset)):
-    
+        
     entry = linecache.getline(ratings_filename, index).split(",")
                                                                  
     # Example: <1,1,2,0.8,0>
@@ -177,7 +177,7 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
     if percentage % 2 == 0:
         print("{}/{} ({}/100%)".format(int(index), ratings_number, int(percentage)))
     # print("---------- CURRENT ENTRY ----------")
-    # print(f"TIMESTAMP {timestamp} - READER {reader} - PAPER {paper} - SCORE {rating}")
+    print(f"TIMESTAMP {timestamp} - READER {reader} - PAPER {paper} - SCORE {rating}")
     
     serialize_result(index, verbose=False)
 
@@ -286,7 +286,7 @@ elapsed_time = serialize_result(ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[9]:
+# In[ ]:
 
 
 # Summary

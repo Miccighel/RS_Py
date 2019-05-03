@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[167]:
+# In[65]:
 
 
 
@@ -18,8 +18,8 @@ from scipy.stats import truncnorm as tn
 
 # Quantities to seed
 
-papers_number = 5000
-readers_number = 2500
+papers_number = 10000
+readers_number = 4000
 authors_number = 25
 
 papers = np.arange(papers_number)
@@ -28,7 +28,7 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_2/p_1"
+dataset_name = "seed_2/r_3"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_file_path = f"{dataset_folder_path}info.csv"
 ratings_file_path = f"{dataset_folder_path}ratings.csv"
@@ -43,7 +43,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[168]:
+# In[66]:
 
 
 
@@ -63,7 +63,7 @@ print(f"{papers_number}/{papers_number} (100/100%)")
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[169]:
+# In[67]:
 
 
 
@@ -86,7 +86,10 @@ print("---------- READERS SETS GENERATION STARTED ----------")
 
 ratings_number = sum(paper_frequencies) * readers_amount
 for x in range(0, reader_sets_number):
-    current_readers_set = rn.sample(readers_set, readers_amount)
+    if x == reader_sets_number - 1:
+        current_readers_set = rn.sample(readers_set, (readers_amount-1))
+    else: 
+        current_readers_set = rn.sample(readers_set, readers_amount)
     readers_sets.append(current_readers_set)
     for reader in current_readers_set:
         readers_set.remove(reader)
@@ -122,7 +125,7 @@ ratings_file.close()
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[170]:
+# In[68]:
 
 
 
@@ -151,7 +154,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[171]:
+# In[69]:
 
 
 
