@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[47]:
+# In[21]:
 
 
 
@@ -18,7 +18,7 @@ from scipy.stats import truncnorm as tn
 
 # Quantities to seed
 
-papers_number = 20000
+papers_number = 10000
 readers_number = 2500
 authors_number = 25
 
@@ -28,11 +28,11 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_2/p_4"
-dataset_folder_path = f"../data/{dataset_name}/"
-info_file_path = f"{dataset_folder_path}info.csv"
-ratings_file_path = f"{dataset_folder_path}ratings.csv"
-authors_file_path = f"{dataset_folder_path}authors.csv"
+dataset_name = "seed_2/p_4_lot_variance"
+dataset_folder_path = "../data/{}/".format(dataset_name)
+info_file_path = "{}info.csv".format(dataset_folder_path)
+ratings_file_path = "{}ratings.csv".format(dataset_folder_path)
+authors_file_path = "{}authors.csv".format(dataset_folder_path)
 
 os.makedirs(dataset_folder_path, exist_ok=True)
 
@@ -43,7 +43,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[48]:
+# In[22]:
 
 
 
@@ -55,15 +55,15 @@ paper_distributions = np.empty(papers_number)
 for index in range(0, papers_number):
     percentage = 100*index/papers_number
     if percentage % 10 == 0:
-        print(f"{int(index)}/{papers_number} ({int(percentage)}/100%)")
-    distribution = tn(0, 1, loc=rn.uniform(0, 1), scale=rn.uniform(0, 0.05)).rvs(1)
+        print("{}/{} ({}/100%)").format(int(index), papers_number, int(percentage))
+    distribution = tn(0, 1, loc=rn.uniform(0, 1), scale=rn.uniform(0, 0.9)).rvs(1)
     paper_distributions[index] = distribution
-print(f"{papers_number}/{papers_number} (100/100%)")
+print("{}/{} (100/100%)").format(papers_number, papers_number)
     
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[49]:
+# In[23]:
 
 
 
@@ -92,13 +92,15 @@ for x in range(0, reader_sets_number):
     readers_sets.append(current_readers_set)
     for reader in current_readers_set:
         readers_set.remove(reader)
-    print(f"SET {x}: ", current_readers_set)
+    print("SET {}: ", current_readers_set).format(x)
      
 print("---------- READERS SETS GENERATION COMPLETED ----------")
 
 print("---------- RATINGS GENERATION STARTED ----------")
 
 generated_ratings = 0
+rated_papers = []
+rated_readers = []
 with open(ratings_file_path, mode='w', newline='') as ratings_file:
     ratings_writer = csv.writer(ratings_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     ratings_writer.writerow(['Timestamp', 'Reader', 'Paper', 'Score'])
@@ -110,7 +112,7 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                 paper_distribution = paper_distributions[paper]
                 percentage = 100*generated_ratings/ratings_number
                 if percentage % 10 == 0:
-                    print(f"{int(generated_ratings)}/{ratings_number} ({int(percentage)}/100%)")
+                    print("{}/{} ({}/100%)").format(int(generated_ratings), ratings_number, int(percentage))
                 current_tuple = {
                     "Reader": reader, 
                     "Paper": paper, 
@@ -118,13 +120,30 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                 }
                 ratings_writer.writerow([generated_ratings, current_tuple["Reader"], current_tuple["Paper"], current_tuple["Score"]])
                 generated_ratings+=1
-    print(f"{ratings_number}/{ratings_number} (100/100%)")
+                rated_readers.append(reader)
+                rated_papers.append(paper)
+    
+    # Filling gaps
+    unrated_papers = set(papers) - set(rated_papers)    
+    for paper in unrated_papers:
+        for reader in rn.sample(set(readers), 3): 
+            paper_distribution = paper_distributions[paper]
+            current_tuple = {
+                "Reader": reader, 
+                "Paper": paper, 
+                "Score": round(paper_distribution, 2), 
+            }
+            ratings_writer.writerow([generated_ratings, current_tuple["Reader"], current_tuple["Paper"], current_tuple["Score"]])    
+            generated_ratings = generated_ratings + 1
+
+    print("{}/{} (100/100%)").format(ratings_number, ratings_number)
+    
 ratings_file.close()
 
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[50]:
+# In[24]:
 
 
 
@@ -138,7 +157,7 @@ with open(authors_file_path, mode='w', newline='') as authors_file:
     for index, author in enumerate(authors):
         percentage = 100*index/authors_number
         if percentage % 10 == 0:
-            print(f"{int(index)}/{authors_number} ({int(percentage)}/100%)")
+            print("{}/{} ({}/100%)").format(int(index), authors_number, int(percentage))
         # An author writes a number of paper between 1 and paper_fraction
         author_papers_number = rn.randint(1, (papers_number-1))
         papers_written = np.random.choice(papers, author_papers_number).tolist()
@@ -147,13 +166,13 @@ with open(authors_file_path, mode='w', newline='') as authors_file:
             papers_written = map(str, list(papers_written))
             papers_written = ";".join(papers_written)
         authors_writer.writerow([author, papers_written])
-    print(f"{authors_number}/{authors_number} (100/100%)")
+    print("{}/{} (100/100%)").format(authors_number, authors_number)
 authors_file.close()
         
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[51]:
+# In[25]:
 
 
 
