@@ -1,2 +1,2 @@
-Dataset,Max Rating Paper,Min Rating Paper,Mean Rating Paper
-ground_truth_1,3,1,2.0
+Dataset,Max Number Rating Paper,Min Number Rating Paper,Mean Number Rating Paper,Max Number Rating Reader,Min Number Rating Reader,Mean Number Rating Reader
+ground_truth_1,3,1,2,2,0,1
