@@ -123,16 +123,13 @@ def serialize_result(current_index, verbose):
     if verbose:
         print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
             
-    paper_ratings_out = pd.read_csv(ratings_filename)
-    matrix = paper_ratings_out.pivot_table(index="Reader", columns="Paper", values="Score")
-    matrix.fillna(0, inplace=True)
-    matrix.to_csv(result_ratings_filename, sep=",", header=False, index=False)
+    paper_ratings_dataframe = pd.read_csv(ratings_filename)
+    ratings_matrix = paper_ratings_dataframe.pivot_table(index="Reader", columns="Paper", values="Score")
+    ratings_matrix.fillna(0, inplace=True)
+    ratings_matrix.to_csv(result_ratings_filename, sep=",", header=False, index=False)
         
     if verbose:
         print("PRINTING RATING GOODNESS MATRIX TO .CSV FILE AT PATH {}".format(result_goodness_filename))
-    
-    #res = [item for sublist in rating_goodness for item in sublist]
-    #print(collections.Counter(res))
     
     with open(result_goodness_filename, mode='w', newline='') as result_goodness_file:
         goodness_writer = csv.writer(result_goodness_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
