@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[3]:
 
 
 import pandas as pd
@@ -11,6 +11,8 @@ from collections import deque
 import csv
 import numpy as np
 import os
+import collections
+import random as rn
 import json
 import time
 
@@ -20,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "seed_2/r_4"
+dataset_name = "ground_truth_1"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -104,32 +106,33 @@ def serialize_result(current_index, verbose):
     for rating_index in range(csv_offset, current_index):
                 
         current_entry = linecache.getline(ratings_filename, rating_index).split(",")
-        
+                
         # Example: <1,1,2,0.8,0>
         # At Timestamp 1 Reader 1 gave to Paper 2 a Rating of 0.8
-        # current_timestamp = int(current_entry[0])
+        current_timestamp = int(current_entry[0])
         current_reader = int(current_entry[1])
         current_paper = int(current_entry[2])
         current_rating = float(current_entry[3])
             
         rating_matrix[current_reader][current_paper] = current_rating
-        goodness_matrix[current_reader][current_paper] = rating_goodness[timestamp]
+        goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
     
     result_ratings_filename = "{}readersourcing/ratings.csv".format(result_folder_path)
-    
     result_goodness_filename = "{}readersourcing/goodness.csv".format(result_folder_path)
     
     if verbose:
         print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
             
-    with open(result_ratings_filename, mode='w', newline='') as result_rating_file:
-        rating_writer = csv.writer(result_rating_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for rating_entry in rating_matrix:
-            rating_writer.writerow(rating_entry)
-    result_rating_file.close()
-    
+    paper_ratings_out = pd.read_csv(ratings_filename)
+    matrix = paper_ratings_out.pivot_table(index="Reader", columns="Paper", values="Score")
+    matrix.fillna(0, inplace=True)
+    matrix.to_csv(result_ratings_filename, sep=",", header=False, index=False)
+        
     if verbose:
         print("PRINTING RATING GOODNESS MATRIX TO .CSV FILE AT PATH {}".format(result_goodness_filename))
+    
+    #res = [item for sublist in rating_goodness for item in sublist]
+    #print(collections.Counter(res))
     
     with open(result_goodness_filename, mode='w', newline='') as result_goodness_file:
         goodness_writer = csv.writer(result_goodness_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -226,7 +229,6 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         author_score[author] = ((old_author_steadiness * old_author_score) + (old_reader_score * rating)) / author_steadiness[author]
 
     # COMPUTATION START: PROPAGATING CHANGES TO PREVIOUS READERS
-    # COMPUTATION START: PROPAGATING CHANGES TO PREVIOUS READERS
         
     previous_ratings = []        
     with open(ratings_filename) as rating_file:
@@ -234,17 +236,17 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         raw_previous_ratings.popleft()
     rating_file.close()
     for raw_previous_rating in raw_previous_ratings:
-        previous_rating = np.array(raw_previous_rating.split(","))
+        previous_rating = raw_previous_rating.split(",")
         previous_ratings.append(previous_rating)
-    previous_ratings = np.array(previous_ratings)
-    previous_paper_ratings = previous_ratings[
+    previous_ratings = np.array(previous_ratings, dtype=float)
+    previous_ratings = previous_ratings[
          (previous_ratings[:,1]!=float(reader)) &
          (previous_ratings[:,2]==float(paper))
     ]            
-        
+                   
     # print(" ----- PREVIOUS PAPER RATINGS -----")
 
-    for previous_index, previous_entry in enumerate(previous_paper_ratings):
+    for previous_index, previous_entry in enumerate(previous_ratings):
         
         # Example: <1,1,2,0.8,0>
         # At Timestamp 1 Reader 1 gave to Paper 2 a Rating of 0.8 written by Author 0
@@ -252,11 +254,6 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
         previous_reader = int(previous_entry[1])
         previous_paper = int(previous_entry[2])
         previous_rating = previous_entry[3]
-                
-        if previous_timestamp == 799:
-            print(previous_entry)
-            print(paper_ratings.head(800))
-            print(previous_reader)
 
         # print(f"PREVIOUS TIMESTAMP {previous_timestamp} - PREVIOUS READER {previous_reader} - PREVIOUS PAPER {previous_paper} - PREVIOUS RATING {previous_rating}")
 
@@ -276,7 +273,7 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
                                             (old_paper_steadiness * old_previous_rating_goodness) +
                                             (paper_steadiness[paper] * rating_goodness[previous_timestamp])
                                         ) / reader_steadiness[previous_reader]
-
+           
     # print(" ----- PREVIOUS PAPER RATINGS END -----")
         
     # print("---------- PRINTING FINAL VALUES AT TIME T(I+1) ----------")
@@ -291,7 +288,7 @@ elapsed_time = serialize_result(ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Summary
