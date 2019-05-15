@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[15]:
 
 
 import pandas as pd
@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "ground_truth_1"
+dataset_name = "seed_2/small"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -42,6 +42,7 @@ dataset_name = info["Dataset"][0]
 papers_number = info["Paper"][0]
 readers_number = info["Reader"][0]
 ratings_number = info["Rating"][0]
+ratings_number_per_day = int(ratings_number / 30)
 authors_number = info["Author"][0]
 papers = np.arange(papers_number)
 readers = np.arange(readers_number)
@@ -73,10 +74,10 @@ def get_author(current_paper) :
 
 # Function to output result to file
 
-def serialize_result(current_index, verbose):
+def serialize_result(day, current_index, verbose):
     
     result_folder_path = "../models/{}/".format(dataset_name)
-    os.makedirs("{}readersourcing/".format(result_folder_path), exist_ok=True)
+    os.makedirs("{}readersourcing/day_{}/".format(result_folder_path, day), exist_ok=True)
 
     # Quantities output handling
 
@@ -89,7 +90,7 @@ def serialize_result(current_index, verbose):
         {'Quantity': 'Author Score', 'Identifiers': authors.tolist(), 'Values': author_score.tolist()},
     ]
     
-    result_quantities_filename = "{}readersourcing/quantities.json".format(result_folder_path)
+    result_quantities_filename = "{}readersourcing/day_{}/quantities.json".format(result_folder_path, day)
         
     if verbose:
         print("PRINTING QUANTITIES TO .JSON FILE AT PATH {}".format(result_quantities_filename))
@@ -117,8 +118,8 @@ def serialize_result(current_index, verbose):
         rating_matrix[current_reader][current_paper] = current_rating
         goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
     
-    result_ratings_filename = "{}readersourcing/ratings.csv".format(result_folder_path)
-    result_goodness_filename = "{}readersourcing/goodness.csv".format(result_folder_path)
+    result_ratings_filename = "{}readersourcing/day_{}/ratings.csv".format(result_folder_path, day)
+    result_goodness_filename = "{}readersourcing/day_{}/goodness.csv".format(result_folder_path, day)
     
     if verbose:
         print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -143,7 +144,7 @@ def serialize_result(current_index, verbose):
     
     dictionary = [{'Time': result_elapsed_time}]
     
-    result_info_filename = "{}readersourcing/info.json".format(result_folder_path)
+    result_info_filename = "{}readersourcing/day_{}/info.json".format(result_folder_path, day)
     
     if verbose:
         print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -158,6 +159,9 @@ def serialize_result(current_index, verbose):
 # print("##########")
 
 print("0/0 (0/100%)")
+
+days = 1
+written = False
 
 for index in range(csv_offset, (ratings_number + csv_offset)):
         
@@ -177,8 +181,13 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
     # print("---------- CURRENT ENTRY ----------")
     # print(f"TIMESTAMP {timestamp} - READER {reader} - PAPER {paper} - SCORE {rating}")
     
-    if percentage % 10 == 0:
-        serialize_result(index, verbose=False)
+    if index % (ratings_number_per_day * days) == 0:
+        days += 1
+        written = False
+        
+    if days % 5 == 0 and not written:
+        serialize_result(days, index, verbose=False)
+        written = True
 
     # COMPUTATION START: PAPER AND READER SCORE
 
@@ -281,11 +290,11 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
     # print("##########")
 
 print("{}/{} (100/100%)".format(int(ratings_number), int(ratings_number))) 
-elapsed_time = serialize_result(ratings_number, verbose=True)
+elapsed_time = serialize_result((days-1), ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
 
-# In[4]:
+# In[16]:
 
 
 # Summary

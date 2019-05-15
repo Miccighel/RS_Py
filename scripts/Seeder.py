@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[34]:
+# In[2]:
 
 
 
@@ -15,8 +15,8 @@ from random import randint
 from scipy.stats import beta
 
 
-papers_number = 10000
-readers_number = 5000
+papers_number = 500
+readers_number = 250
 authors_number = 25
 
 papers = np.arange(papers_number)
@@ -25,7 +25,7 @@ authors = np.arange(authors_number)
 
 # Seed folder path
 
-dataset_name = "seed_2/r_4_beta"
+dataset_name = "seed_2/small"
 dataset_folder_path = f"../data/{dataset_name}/"
 info_file_path = f"{dataset_folder_path}info.csv"
 ratings_file_path = f"{dataset_folder_path}ratings.csv"
@@ -84,7 +84,7 @@ print(f"{papers_number}/{papers_number} (100/100%)")
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[35]:
+# In[3]:
 
 
 
@@ -105,6 +105,7 @@ paper_frequencies = [2, 4, 8, 30, 90]
 print("---------- READERS SETS GENERATION STARTED ----------")
 
 ratings_number = sum(paper_frequencies) * readers_amount
+
 for x in range(0, reader_sets_number):
     current_readers_set = np.random.choice(readers, readers_amount, False) 
     readers = np.setdiff1d(readers, current_readers_set)
@@ -163,10 +164,17 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
     
 ratings_file.close()
 
+paper_ratings = pd.read_csv(ratings_file_path)
+paper_ratings = paper_ratings.sample(frac=1)
+paper_ratings["Timestamp"] = range(len(paper_ratings))
+paper_ratings.reset_index(drop=True, inplace=True)
+
+paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
+
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[36]:
+# In[4]:
 
 
 
@@ -195,7 +203,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[37]:
+# In[5]:
 
 
 
