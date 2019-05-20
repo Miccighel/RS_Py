@@ -22,7 +22,7 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "seed_2/small"
+dataset_name = "seed_2/p_4_beta_big"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -42,7 +42,7 @@ dataset_name = info["Dataset"][0]
 papers_number = info["Paper"][0]
 readers_number = info["Reader"][0]
 ratings_number = info["Rating"][0]
-ratings_number_per_day = int(ratings_number / 30)
+ratings_number_per_day = int(ratings_number / 180)
 authors_number = info["Author"][0]
 papers = np.arange(papers_number)
 readers = np.arange(readers_number)
