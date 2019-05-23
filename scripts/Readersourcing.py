@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[15]:
+# In[1]:
 
 
 import pandas as pd
@@ -9,12 +9,22 @@ import math as m
 import linecache
 from collections import deque
 import csv
+import zipfile
+import threading
 import numpy as np
 import os
-import collections
-import random as rn
 import json
 import time
+
+# Parameter setting
+
+dataset_name = "sample"
+days_serialization = True
+days_serialization_threshold = 2
+days_number = 10
+# days_cleaning_threshold = 4
+# result_compression = True
+# archive_name = "result"
 
 # Reader score must be set to a very small value otherwise there will be a division by 0
 
@@ -22,7 +32,6 @@ epsilon = 0.000001
 
 # CSV file parsing
 
-dataset_name = "seed_2/p_4_beta_big"
 dataset_folder_path = "../data/{}/".format(dataset_name)
 info_filename = "{}info.csv".format(dataset_folder_path)
 ratings_filename = "{}ratings.csv".format(dataset_folder_path)
@@ -36,13 +45,13 @@ paper_ratings = paper_ratings.values
 
 csv_offset = 2
 
-# Initial setup
+# Initial Readersourcing setup
 
 dataset_name = info["Dataset"][0]
 papers_number = info["Paper"][0]
 readers_number = info["Reader"][0]
 ratings_number = info["Rating"][0]
-ratings_number_per_day = int(ratings_number / 180)
+ratings_number_per_day = m.floor(int(ratings_number / days_number))
 authors_number = info["Author"][0]
 papers = np.arange(papers_number)
 readers = np.arange(readers_number)
@@ -56,6 +65,23 @@ reader_score = np.zeros(readers_number)
 reader_score.fill(epsilon)
 author_steadiness = np.zeros(authors_number)
 author_score = np.zeros(authors_number)
+
+# Day serialization handling
+
+computed_days = 1
+written = False
+# cleaned = False
+
+# Output handling
+
+result_file_paths = []
+
+
+# In[3]:
+
+
+
+# ----- ALGORITHM STARTS HERE ----- #
 
 start_time = time.time()
 
@@ -76,8 +102,14 @@ def get_author(current_paper) :
 
 def serialize_result(day, current_index, verbose):
     
-    result_folder_path = "../models/{}/".format(dataset_name)
-    os.makedirs("{}readersourcing/day_{}/".format(result_folder_path, day), exist_ok=True)
+    base_path = "../models/{}/readersourcing/".format(dataset_name)
+    
+    if days_serialization:
+        result_folder_path = "{}day_{}/".format(base_path, day)
+    else:
+        result_folder_path = base_path
+    
+    os.makedirs(result_folder_path, exist_ok=True)
 
     # Quantities output handling
 
@@ -90,8 +122,8 @@ def serialize_result(day, current_index, verbose):
         {'Quantity': 'Author Score', 'Identifiers': authors.tolist(), 'Values': author_score.tolist()},
     ]
     
-    result_quantities_filename = "{}readersourcing/day_{}/quantities.json".format(result_folder_path, day)
-        
+    result_quantities_filename = "{}quantities.json".format(result_folder_path, day)
+    
     if verbose:
         print("PRINTING QUANTITIES TO .JSON FILE AT PATH {}".format(result_quantities_filename))
     
@@ -118,8 +150,8 @@ def serialize_result(day, current_index, verbose):
         rating_matrix[current_reader][current_paper] = current_rating
         goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
     
-    result_ratings_filename = "{}readersourcing/day_{}/ratings.csv".format(result_folder_path, day)
-    result_goodness_filename = "{}readersourcing/day_{}/goodness.csv".format(result_folder_path, day)
+    result_ratings_filename = "{}ratings.csv".format(result_folder_path, day)
+    result_goodness_filename = "{}goodness.csv".format(result_folder_path, day)
     
     if verbose:
         print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -144,7 +176,7 @@ def serialize_result(day, current_index, verbose):
     
     dictionary = [{'Time': result_elapsed_time}]
     
-    result_info_filename = "{}readersourcing/day_{}/info.json".format(result_folder_path, day)
+    result_info_filename = "{}info.json".format(result_folder_path, day)
     
     if verbose:
         print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -153,20 +185,65 @@ def serialize_result(day, current_index, verbose):
         json.dump(dictionary, result_info_file)
     result_info_file.close()
     
-    return result_elapsed_time
+    #if result_compression:
+    #    archive_filename = "{}{}.zip".format(result_folder_path, archive_name)
+    #    archive_file = zipfile.ZipFile(archive_filename, 'w')
+    #    for folder, subfolders, files in os.walk(result_folder_path):
+    #        for file in files:
+    #            if file.endswith('.csv') or file.endswith('.json'):
+    #                archive_file.write(os.path.join(folder, file), os.path.relpath(os.path.join(folder,file), result_folder_path), compress_type = zipfile.ZIP_DEFLATED)
+    #    archive_file.close()           
+    #    print("RESULT COMPRESSED INTO A .ZIP ARCHIVE AT PATH {}".format(archive_filename))
+                
+    file_paths = [result_ratings_filename, result_goodness_filename, result_quantities_filename, result_info_filename]
+    
+    return result_elapsed_time, file_paths
+
+def clean_results(results_to_clean):
+    print("*********************************")
+    print("********** CLEANING RESULTS **********")
+    for file_path in results_to_clean:
+        if os.path.isfile(file_path):
+            print("Deleting file at path: ", file_path)
+            thread = threading.Thread(
+                target=os.remove,
+                args=[file_path],
+            )
+            thread.daemon = True
+            thread.start()
+    print("*********************************")
 
 # There are many "print" that you can uncomment if you have to do some debugging
 # print("##########")
 
+print("------------------------------")
+if days_serialization:
+    print("---------- DAY 0/{} ----------".format(days_number))
 print("0/0 (0/100%)")
 
-days = 1
-written = False
-
 for index in range(csv_offset, (ratings_number + csv_offset)):
-        
+    
+    percentage = 100*index/ratings_number
+    if percentage % 2 == 0:
+        print("{}/{} ({}/100%)".format(int(index), ratings_number, int(percentage)))
+    
+    if days_serialization:
+        if index % (ratings_number_per_day * computed_days) == 0:
+            computed_days += 1
+            written = False
+            #cleaned = False
+            # if computed_days % days_cleaning_threshold == 0 and not cleaned:
+            #     clean_results(result_file_paths)
+            #     result_file_paths = []
+            #     cleaned = True
+            if computed_days % days_serialization_threshold == 0 and not written:
+                print("---------- DAY {}/{} ----------".format(computed_days, days_number))
+                elapsed_time, paths = serialize_result(computed_days, index, verbose=False)
+                result_file_paths = result_file_paths + paths
+                written = True
+
     entry = linecache.getline(ratings_filename, index).split(",")
-                                                                 
+                                                                     
     # Example: <1,1,2,0.8,0>
     # At Timestamp 1 Reader 1 gave to Paper 2 a Rating of 0.8
     timestamp = int(entry[0])
@@ -175,19 +252,8 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
     rating = float(entry[3])
     authors_of_paper = get_author(paper)
     
-    percentage = 100*index/ratings_number
-    if percentage % 2 == 0:
-        print("{}/{} ({}/100%)".format(int(index), ratings_number, int(percentage)))
     # print("---------- CURRENT ENTRY ----------")
     # print(f"TIMESTAMP {timestamp} - READER {reader} - PAPER {paper} - SCORE {rating}")
-    
-    if index % (ratings_number_per_day * days) == 0:
-        days += 1
-        written = False
-        
-    if days % 5 == 0 and not written:
-        serialize_result(days, index, verbose=False)
-        written = True
 
     # COMPUTATION START: PAPER AND READER SCORE
 
@@ -289,12 +355,14 @@ for index in range(csv_offset, (ratings_number + csv_offset)):
     # print("READER SCORE: ", reader_score)
     # print("##########")
 
-print("{}/{} (100/100%)".format(int(ratings_number), int(ratings_number))) 
-elapsed_time = serialize_result((days-1), ratings_number, verbose=True)
+print("------------------------------")
+elapsed_time = serialize_result((days_number-1), ratings_number, verbose=True)
 print("ELAPSED TIME: ", elapsed_time)
 
+# ----- ALGORITHM ENDS HERE ----- #
 
-# In[16]:
+
+# In[2]:
 
 
 # Summary
