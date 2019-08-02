@@ -1,47 +1,50 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
-
+# In[5]:
 
 
 import pandas as pd
-import seaborn as sb
+# import seaborn as sb
 import numpy as np
 import math as m
 import os
 import collections
 import csv
 import random as rn
-from matplotlib import pyplot as plt
-import scipy as sp
-from scipy.stats import truncnorm as tn
+# from pprint import pprint
+# from matplotlib import pyplot as plt
+# import scipy as sp
+# from scipy.stats import truncnorm as tn
+from scipy.stats import beta as beta
 
 # Parameter setting
 
-dataset_name = "sample_days"
+dataset_name = "seed_2_with_shuffle"
 papers_number = 300
-readers_number = 150
-authors_number = 25
+readers_number = 1000
+authors_number = 40
 months_number = 1
 paper_frequencies = [
     2 * months_number, 
-    4 * months_number, 
+    6 * months_number, 
     8 * months_number, 
-    30 * months_number, 
-    90 * months_number
+    14 * months_number, 
+    20 * months_number
 ]
-readers_percent = 20
+shuffling = True
+shuffle_number = 100
 
-assert papers_number > (90 * months_number), f"ERROR: papers_number must be greater than (equal to) {(90 * months_number)}" 
+assert (papers_number > (sum(paper_frequencies)) and (papers_number % 10) == 0),     "ERROR: papers_number must be greater than (equal to) {} and it must be a multiple of 10.".format(sum(paper_frequencies)) 
 
 # Seed folder path
 
-dataset_folder_path = f"../data/{dataset_name}/"
-info_file_path = f"{dataset_folder_path}info.csv"
-ratings_file_path = f"{dataset_folder_path}ratings.csv"
-authors_file_path = f"{dataset_folder_path}authors.csv"
-stats_file_path = f"{dataset_folder_path}stats.csv"
+dataset_folder_path = "../data/{}/".format(dataset_name)
+dataset_shuffle_folder_path = "../data/{}/shuffle/".format(dataset_name)
+info_file_path = "{}info.csv".format(dataset_folder_path)
+ratings_file_path = "{}ratings.csv".format(dataset_folder_path)
+authors_file_path = "{}authors.csv".format(dataset_folder_path)
+stats_file_path = "{}stats.csv".format(dataset_folder_path)
 
 # Setting up arrays
 
@@ -58,8 +61,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[10]:
-
+# In[6]:
 
 
 # Papers distribution generation with beta distribution
@@ -67,27 +69,27 @@ print("AUTHORS FILE PATH: ", authors_file_path)
 print("---------- PAPER DISTRIBUTIONS GENERATION STARTED ----------")
 
 # CASE 1: a == b == 1, 5% of papers
-beta_distributions_frequencies = [(m.floor((5*papers_number)/100), (1, 1))]
+beta_distributions_frequencies = [(int(round((5*papers_number/100))), (1, 1))]
 # CASE 2: a == b > 1, 30% of papers
-a = randint(2, 10)
+a = rn.randint(2, 10)
 b = a
-beta_distributions_frequencies.append((m.floor((30*papers_number)/100), (a, b)))
+beta_distributions_frequencies.append((int(round(30*papers_number/100)), (a, b)))
 # CASE 3: 0 < (a ^ b) < 1, 30% of papers
 a = rn.uniform(0.001, 1)
 b = rn.uniform(0.001, 1)
-beta_distributions_frequencies.append((m.floor((20*papers_number)/100), (a, b)))
+beta_distributions_frequencies.append((int(round(20*papers_number/100)), (a, b)))
 # CASE 4: (a V b) == 1, (a > b V b > a), 20% of papers
 a = 1
-b = randint(1, 10)
+b = rn.randint(1, 10)
 if rn.randint(0,1) > 0.5:
     a, b = b, a
-beta_distributions_frequencies.append((m.floor((30*papers_number)/100), (a, b)))
+beta_distributions_frequencies.append((int(round(30*papers_number/100)), (a, b)))
 # CASE 5: (a ^ b) > 1, (a > b V b > a), 15% of papers
-a = randint(2, 10)
-b = randint(2 + a, 10 + a)
+a = rn.randint(2, 10)
+b = rn.randint(2 + a, 10 + a)
 if rn.randint(0,1) > 0.5:
     a, b = b, a
-beta_distributions_frequencies.append((m.floor((15*papers_number)/100), (a, b)))
+beta_distributions_frequencies.append((int(round(15*papers_number/100)), (a, b)))
 
 papers_set = set(papers)
 paper_distributions = [None] * papers_number
@@ -98,16 +100,16 @@ for (papers_amount, (a, b)) in beta_distributions_frequencies:
     for paper in current_paper_set:
         percentage = 100*generated_papers_distributions/papers_number
         if percentage % 10 == 0:
-            print(f"{int(generated_papers_distributions)}/{papers_number} ({int(percentage)}/100%)")
+            print("{}/{} ({}/100%)".format(int(generated_papers_distributions), papers_number, int(percentage)))
         paper_distributions[paper] = beta(a=a, b=b)
         generated_papers_distributions = generated_papers_distributions + 1
         papers_set.remove(paper)
-print(f"{papers_number}/{papers_number} (100/100%)")
+print("{}/{} (100/100%)".format(papers_number, papers_number))
 
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[11]:
+# In[7]:
 
 
 
@@ -121,9 +123,7 @@ readers_amount = m.floor((readers_number*readers_percent)/100)
 
 readers_sets = []
 
-# Readers rate papers with a certain frequence
-
-paper_frequencies = [2, 4, 8, 30, 90]
+# Readers rate papers with a certain frequency
 
 print("---------- READERS SETS GENERATION STARTED ----------")
 
@@ -133,7 +133,7 @@ for x in range(0, reader_sets_number):
     current_readers_set = np.random.choice(readers, readers_amount, False) 
     readers = np.setdiff1d(readers, current_readers_set)
     readers_sets.append(current_readers_set)
-    print(f"SET {x}: ", current_readers_set)
+    print("SET {}: {}".format(x, current_readers_set))
 
 print("---------- READERS SETS GENERATION COMPLETED ----------")
 
@@ -153,7 +153,7 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                 paper_distribution = paper_distributions[paper]
                 percentage = 100*generated_ratings/ratings_number
                 if percentage % 10 == 0:
-                    print(f"{int(generated_ratings)}/{ratings_number} ({int(percentage)}/100%)")
+                    print("{}/{} ({}/100%)".format(int(generated_ratings), ratings_number, int(percentage)))
                 generated_rating = round(paper_distribution.rvs(1)[0], 2)
                 if generated_rating == 0:
                     generated_rating = 0.01
@@ -183,7 +183,7 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                 ])
                 generated_ratings+=1
         
-    print(f"{ratings_number}/{ratings_number} (100/100%)")
+    print("{}/{} (100/100%)".format(ratings_number, ratings_number))
     
 ratings_file.close()
 
@@ -197,8 +197,29 @@ paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[12]:
+# In[8]:
 
+
+print("---------- RATINGS SHUFFLING STARTED ----------")
+
+if shuffling:
+    os.makedirs(dataset_shuffle_folder_path, exist_ok=True)
+    for s in range(shuffle_number):
+        c = 0
+        if s % 10 == 0:
+            print("{}/{} ({}/100%)".format(s, shuffle_number, s))
+        current_shuffle_file_path = "{}/shuffle_{}.csv".format(dataset_shuffle_folder_path, s)
+        shuffled_papers_ratings = paper_ratings.sample(frac=1)
+        for i, row in shuffled_papers_ratings.iterrows():
+            shuffled_papers_ratings.at[i,'Timestamp'] = c
+            c  = c + 1
+        shuffled_papers_ratings.to_csv(current_shuffle_file_path, index=False, header=True, sep=",")
+    print("{}/{} (100/100%)".format(shuffle_number, shuffle_number))
+    
+print("---------- RATINGS SHUFFLING COMPLETED ----------")
+
+
+# In[ ]:
 
 
 # Authors file generation
@@ -211,7 +232,7 @@ with open(authors_file_path, mode='w', newline='') as authors_file:
     for index, author in enumerate(authors):
         percentage = 100*index/authors_number
         if percentage % 10 == 0:
-            print(f"{int(index)}/{authors_number} ({int(percentage)}/100%)")
+            print("{}/{} ({}/100%)".format(int(index), authors_number, int(percentage)))
         # An author writes a number of paper between 1 and paper_fraction
         author_papers_number = rn.randint(1, (papers_number-1))
         papers_written = np.random.choice(papers, author_papers_number).tolist()
@@ -219,15 +240,16 @@ with open(authors_file_path, mode='w', newline='') as authors_file:
         if len(papers_written) > 1:
             papers_written = map(str, list(papers_written))
             papers_written = ";".join(papers_written)
+        else:
+            papers_written = list(papers_written)[0]
         authors_writer.writerow([author, papers_written])
-    print(f"{authors_number}/{authors_number} (100/100%)")
+    print("{}/{} (100/100%)".format(authors_number, authors_number))
 authors_file.close()
         
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[13]:
-
+# In[ ]:
 
 
 # Info file generation
@@ -248,16 +270,15 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[14]:
-
+# In[ ]:
 
 
 # Stats file generation
 
 print("---------- STATS GENERATION STARTED ----------")
 
-temp_ratings_dataframe = pd.read_csv(ratings_file_path, header=None)
-temp_ratings_dataframe[temp_ratings_dataframe.columns] = temp_ratings_dataframe[temp_ratings_dataframe.columns].convert_objects(convert_numeric=True)
+temp_ratings_dataframe = pd.read_csv(ratings_file_path)
+temp_ratings_dataframe[temp_ratings_dataframe.columns] = temp_ratings_dataframe[temp_ratings_dataframe.columns].apply(pd.to_numeric)
 
 stats_dataframe = temp_ratings_dataframe.copy()
 stats_dataframe[stats_dataframe > 0.0000001] = 1
@@ -300,38 +321,27 @@ stats_dataframe = pd.DataFrame(columns=[
     "Max Number Rating Paper", 
     "Min Number Rating Paper", 
     "Mean Number Rating Paper",
+    "Number Papers Unique Ratings",
     "Max Number Rating Reader", 
     "Min Number Rating Reader", 
     "Mean Number Rating Reader"
+    "Number Readers Unique Rating"
 ])
 stats_dataframe = stats_dataframe.append(
     {
         "Dataset": dataset_name, 
         "Max Number Rating Paper": int(max_ratings_paper.values[0]), 
         "Min Number Rating Paper": int(min_ratings_paper.values[0]), 
+        "Number Papers Unique Ratings": paper_counter, 
         "Mean Number Rating Paper": int(mean_ratings_paper.values[0]), 
         "Max Number Rating Reader": int(max_ratings_reader.values[0]), 
         "Min Number Rating Reader": int(min_ratings_reader.values[0]), 
         "Mean Number Rating Reader": int(mean_ratings_reader.values[0]), 
+        "Number Readers Unique Rating": reader_counter, 
     }, ignore_index=True)
 stats_dataframe.to_csv(stats_file_path, index=False)
 
 print("---------- STATS GENERATION COMPLETED ----------")
-
-
-# In[15]:
-
-
-# Summary
-
-print("MAX NUMBER OF RATINGS FOR A PAPER: ", int(max_ratings_paper.values[0]))
-print("MIN NUMBER OF RATINGS FOR A PAPER: ", int(min_ratings_paper.values[0]))
-print("MEAN NUMBER OF RATINGS FOR A PAPER: ", int(mean_ratings_paper.values[0]))
-print("NUMBER OF PAPERS WITH UNIQUE RATING: ", reader_counter)
-print("MAX NUMBER OF RATINGS FOR A READER: ", int(max_ratings_reader.values[0]))
-print("MIN NUMBER OF RATINGS FOR A READER: ", int(min_ratings_reader.values[0]))
-print("MEAN NUMBER OF RATINGS FOR A READER: ", int(mean_ratings_reader.values[0]))
-print("NUMBER OF READERS WITH UNIQUE RATING: ", paper_counter)
 
 
 # In[ ]:
