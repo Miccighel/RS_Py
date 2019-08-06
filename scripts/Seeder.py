@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[146]:
 
 
 import pandas as pd
-# import seaborn as sb
 import numpy as np
 import math as m
 import os
 import collections
 import csv
 import random as rn
-# from pprint import pprint
-# from matplotlib import pyplot as plt
-# import scipy as sp
-# from scipy.stats import truncnorm as tn
 from scipy.stats import beta as beta
+
+# ------------------------------
+# ----- PARAMETERS & SETUP -----
+# ------------------------------
 
 # Parameter setting
 
-dataset_name = "seed_2_with_shuffle"
+dataset_name = "seed_shuffle_1"
 papers_number = 300
 readers_number = 1000
 authors_number = 40
@@ -61,56 +60,74 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[6]:
+# In[147]:
 
+
+# ------------------------------
+# ---- CORE IMPLEMENTATION -----
+# ------------------------------
 
 # Papers distribution generation with beta distribution
 
 print("---------- PAPER DISTRIBUTIONS GENERATION STARTED ----------")
 
-# CASE 1: a == b == 1, 5% of papers
-beta_distributions_frequencies = [(int(round((5*papers_number/100))), (1, 1))]
-# CASE 2: a == b > 1, 30% of papers
-a = rn.randint(2, 10)
-b = a
-beta_distributions_frequencies.append((int(round(30*papers_number/100)), (a, b)))
-# CASE 3: 0 < (a ^ b) < 1, 30% of papers
-a = rn.uniform(0.001, 1)
-b = rn.uniform(0.001, 1)
-beta_distributions_frequencies.append((int(round(20*papers_number/100)), (a, b)))
-# CASE 4: (a V b) == 1, (a > b V b > a), 20% of papers
-a = 1
-b = rn.randint(1, 10)
-if rn.randint(0,1) > 0.5:
-    a, b = b, a
-beta_distributions_frequencies.append((int(round(30*papers_number/100)), (a, b)))
-# CASE 5: (a ^ b) > 1, (a > b V b > a), 15% of papers
-a = rn.randint(2, 10)
-b = rn.randint(2 + a, 10 + a)
-if rn.randint(0,1) > 0.5:
-    a, b = b, a
-beta_distributions_frequencies.append((int(round(15*papers_number/100)), (a, b)))
+generated_configurations = {"0":{},"1":{},"2":{},"3":{},"4":{}}
+
+beta_distributions_frequencies = [(0, int(round((5*papers_number/100))))]
+beta_distributions_frequencies.append((1, int(round(30*papers_number/100))))
+beta_distributions_frequencies.append((2, int(round(20*papers_number/100))))
+beta_distributions_frequencies.append((3, int(round(30*papers_number/100))))
+beta_distributions_frequencies.append((4, int(round(15*papers_number/100))))
 
 papers_set = set(papers)
 paper_distributions = [None] * papers_number
 
 generated_papers_distributions = 0
-for (papers_amount, (a, b)) in beta_distributions_frequencies:
+for (index, papers_amount) in beta_distributions_frequencies:
     current_paper_set = rn.sample(papers_set, papers_amount)
+    generated_configurations["{}".format(index)]["papers_ids"] = current_paper_set
+    generated_configurations["{}".format(index)]["papers_amount"] = papers_amount
     for paper in current_paper_set:
+        a = 0
+        b = 0
+        if index==0:
+            # CASE 1: a == b == 1, 5% of papers
+            a = 1
+            b = 1
+        if index==1:
+            # CASE 2: a == b > 1, 30% of papers
+            a = rn.randint(2, 10)
+            b = a
+        if index == 2:
+            # CASE 3: 0 < (a ^ b) < 1, 30% of papers
+            a = rn.uniform(0.001, 1)
+            b = rn.uniform(0.001, 1)
+        if index == 3:
+            # CASE 4: (a V b) == 1, (a > b V b > a), 20% of papers
+            a = 1
+            b = rn.randint(1, 10)
+            if rn.randint(0,1) > 0.5:
+                a, b = b, a
+        if index == 4:
+            # CASE 5: (a ^ b) > 1, (a > b V b > a), 15% of papers
+            a = rn.randint(2, 10)
+            b = rn.randint(2 + a, 10 + a)
+            if rn.randint(0,1) > 0.5:
+                a, b = b, a
         percentage = 100*generated_papers_distributions/papers_number
         if percentage % 10 == 0:
             print("{}/{} ({}/100%)".format(int(generated_papers_distributions), papers_number, int(percentage)))
-        paper_distributions[paper] = beta(a=a, b=b)
+        paper_distributions[paper] = [a, b]
         generated_papers_distributions = generated_papers_distributions + 1
         papers_set.remove(paper)
 print("{}/{} (100/100%)".format(papers_number, papers_number))
 
+print(generated_configurations)
+
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[7]:
-
+# In[148]:
 
 
 # Ratings file generation
@@ -150,7 +167,7 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
         for reader in readers_set:
             sample = np.random.choice(papers, frequency, False)     
             for paper in sample:    
-                paper_distribution = paper_distributions[paper]
+                paper_distribution = beta(paper_distributions[paper][0],paper_distributions[paper][1])
                 percentage = 100*generated_ratings/ratings_number
                 if percentage % 10 == 0:
                     print("{}/{} ({}/100%)".format(int(generated_ratings), ratings_number, int(percentage)))
@@ -197,29 +214,7 @@ paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[8]:
-
-
-print("---------- RATINGS SHUFFLING STARTED ----------")
-
-if shuffling:
-    os.makedirs(dataset_shuffle_folder_path, exist_ok=True)
-    for s in range(shuffle_number):
-        c = 0
-        if s % 10 == 0:
-            print("{}/{} ({}/100%)".format(s, shuffle_number, s))
-        current_shuffle_file_path = "{}/shuffle_{}.csv".format(dataset_shuffle_folder_path, s)
-        shuffled_papers_ratings = paper_ratings.sample(frac=1)
-        for i, row in shuffled_papers_ratings.iterrows():
-            shuffled_papers_ratings.at[i,'Timestamp'] = c
-            c  = c + 1
-        shuffled_papers_ratings.to_csv(current_shuffle_file_path, index=False, header=True, sep=",")
-    print("{}/{} (100/100%)".format(shuffle_number, shuffle_number))
-    
-print("---------- RATINGS SHUFFLING COMPLETED ----------")
-
-
-# In[ ]:
+# In[149]:
 
 
 # Authors file generation
@@ -249,7 +244,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[ ]:
+# In[150]:
 
 
 # Info file generation
@@ -270,7 +265,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[ ]:
+# In[151]:
 
 
 # Stats file generation
@@ -342,6 +337,71 @@ stats_dataframe = stats_dataframe.append(
 stats_dataframe.to_csv(stats_file_path, index=False)
 
 print("---------- STATS GENERATION COMPLETED ----------")
+
+
+# In[145]:
+
+
+# Data generation for experiments
+
+# ------------------------------
+# -- EXP 1-A: DATA GENERATION --
+# ------------------------------
+
+print("---------- SPECIAL RATINGS STARTED ----------")
+
+gaussian_beta_distributions = generated_configurations["2"]
+papers_identifiers = gaussian_beta_distributions["papers_ids"]
+for paper in papers_identifiers:
+    mean = (paper_distributions[paper][0]/(paper_distributions[paper][0] + paper_distributions[paper][1]))
+    SR1_rating_id = generated_ratings
+    SR1_reader = "SR#{}".format(readers_number)
+    SR1_paper = paper
+    SR1_rating_score = mean
+    SR2_rating_id = generated_ratings+1
+    SR2_reader = "SR#{}".format(readers_number+1)
+    SR2_paper = paper
+    SR3_rating_id = generated_ratings+2
+    SR3_reader = "SR#{}".format(readers_number+2)
+    SR3_paper = paper
+    if mean <= 0.5:
+        SR2_rating_score = 0
+        SR3_rating_score = (1-mean)/2
+    else:
+        SR2_rating_score = 0
+        SR3_rating_score = mean/2
+    #print([SR1_rating_id, SR1_reader, SR1_paper, SR1_rating_score])
+    #print([SR2_rating_id, SR2_reader, SR2_paper, SR2_rating_score])
+    #print([SR3_rating_id, SR3_reader, SR3_paper, SR3_rating_score])
+    generated_ratings = generated_ratings + 3
+
+print("---------- SPECIAL RATINGS COMPLETED  ----------")
+
+
+# In[ ]:
+
+
+# ------------------------------
+# -- EXP 1-B: DATA GENERATION --
+# ------------------------------
+
+print("---------- RATINGS SHUFFLING STARTED ----------")
+
+if shuffling:
+    os.makedirs(dataset_shuffle_folder_path, exist_ok=True)
+    for s in range(shuffle_number):
+        c = 0
+        if s % 10 == 0:
+            print("{}/{} ({}/100%)".format(s, shuffle_number, s))
+        current_shuffle_file_path = "{}/shuffle_{}.csv".format(dataset_shuffle_folder_path, s)
+        shuffled_papers_ratings = paper_ratings.sample(frac=1)
+        for i, row in shuffled_papers_ratings.iterrows():
+            shuffled_papers_ratings.at[i,'Timestamp'] = c
+            c  = c + 1
+        shuffled_papers_ratings.to_csv(current_shuffle_file_path, index=False, header=True, sep=",")
+    print("{}/{} (100/100%)".format(shuffle_number, shuffle_number))
+    
+print("---------- RATINGS SHUFFLING COMPLETED ----------")
 
 
 # In[ ]:

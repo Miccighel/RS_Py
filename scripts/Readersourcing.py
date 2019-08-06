@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[20]:
+# In[2]:
 
 
 import pandas as pd
@@ -15,39 +15,11 @@ import numpy as np
 import os
 import json
 import time
+from ReadersourcingParameters import ReadersourcingParameters
 
-class Parameters:
-    def __init__(
-            self, 
-            dataset_name = "ground_truth_1",
-            dataset_folder_path = "../data/{}/".format("ground_truth_1"), 
-            days_serialization = False, 
-            days_serialization_threshold = 0, 
-            days_number = 0, 
-            current_day = 0,
-            days_serialization_cleaning = False,
-            days_cleaning_threshold = 0,
-            data_shuffled = False, 
-            shuffle_amount = 0,
-            current_shuffle = 0,
-            result_compression = False,
-            archive_name = "archive"
-    ):
-        self.dataset_name = dataset_name
-        self.dataset_folder_path = dataset_folder_path.format(dataset_name)
-        self.days_serialization = days_serialization
-        self.days_serialization_threshold = days_serialization_threshold
-        self.days_number = days_number
-        self.current_day = current_day
-        self.days_serialization_cleaning = days_serialization_cleaning
-        self.days_cleaning_threshold = days_cleaning_threshold
-        self.data_shuffled = data_shuffled
-        self.shuffle_amount = shuffle_amount
-        self.current_shuffle = current_shuffle
-        self.result_compression = result_compression
-        self.archive_name = archive_name
-                
-def readersourcing(parameters : Parameters):
+# Scroll to the bottom for the samples section
+
+def readersourcing(parameters : ReadersourcingParameters):
     
     # Checking parameters for weird things
     
@@ -66,6 +38,18 @@ def readersourcing(parameters : Parameters):
              raise ValueError('this must be correct: current_shuffle >= 0')
          if parameters.shuffle_amount < 0:
              raise ValueError('this must be correct: shuffle_amount >= 0')
+        
+    # Parameters unpacking
+    
+    dataset_folder_path = parameters.dataset_folder_path
+    days_serialization = parameters.days_serialization
+    days_serialization_threshold = parameters.days_serialization_threshold
+    days_serialization_cleaning = parameters.days_serialization_cleaning
+    days_cleaning_threshold = parameters.days_cleaning_threshold
+    days_number = parameters.days_number
+    current_day = parameters.current_day
+    data_shuffled = parameters.data_shuffled
+    current_shuffle = parameters.current_shuffle
 
     # Reader score must be set to a very small value otherwise there will be a division by 0
     
@@ -73,14 +57,14 @@ def readersourcing(parameters : Parameters):
     
     # CSV file parsing
     
-    info_filename = "{}info.csv".format(parameters.dataset_folder_path)
-    ratings_filename = "{}ratings.csv".format(parameters.dataset_folder_path)
-    authors_filename = "{}authors.csv".format(parameters.dataset_folder_path)
+    info_filename = "{}info.csv".format(dataset_folder_path)
+    ratings_filename = "{}ratings.csv".format(dataset_folder_path)
+    authors_filename = "{}authors.csv".format(dataset_folder_path)
     
     info = pd.read_csv(info_filename)
     paper_authors = pd.read_csv(authors_filename)
     paper_authors = paper_authors.values
-    paper_ratings = pd.read_csv(ratings_filename)
+    paper_ratings = pd.read_csv(info_filename)
     paper_ratings = paper_ratings.values
         
     csv_offset = 2
@@ -107,16 +91,16 @@ def readersourcing(parameters : Parameters):
     
     # Day serialization handling
     
-    if parameters.days_serialization:
-        ratings_number_per_day = m.floor(int(ratings_number / parameters.days_number))
+    if days_serialization:
+        ratings_number_per_day = m.floor(int(ratings_number / days_number))
         computed_days = 1
         written = False
         # cleaned = False
         
     # Data shuffling handling
     
-    if parameters.data_shuffled:
-        ratings_filename = "{}shuffle/shuffle_{}.csv".format(parameters.dataset_folder_path, parameters.current_shuffle)
+    if data_shuffled:
+        ratings_filename = "{}shuffle/shuffle_{}.csv".format(dataset_folder_path, current_shuffle)
     
     # Output handling
     
@@ -141,17 +125,23 @@ def readersourcing(parameters : Parameters):
     
     def serialize_result(current_index, verbose, parameters):
         
-        print(parameters.result_compression)
+        # Parameters  unpacking
         
-        base_path = "../models/{}/readersourcing/".format(dataset_name)
-         
-        if parameters.data_shuffled:
-            result_folder_path = "../models/{}/readersourcing/shuffle_{}/".format(dataset_name, parameters.current_shuffle)
+        days_serialization = parameters.days_serialization
+        current_day = parameters.current_day
+        data_shuffled = parameters.data_shuffled
+        current_shuffle = parameters.current_shuffle
+        result_compression = parameters.result_compression
+        archive_name =  parameters.archive_name
+        result_folder_base_path = parameters.result_folder_base_path 
+                         
+        if data_shuffled:
+            result_folder_path = "../models/{}/readersourcing/shuffle/shuffle_{}/".format(dataset_name, current_shuffle)
         else:
-            if parameters.days_serialization:
-                result_folder_path = "{}day_{}/".format(base_path, parameters.current_day)
+            if days_serialization:
+                result_folder_path = "{}day_{}/".format(result_folder_base_path, current_day)
             else:
-                result_folder_path = base_path
+                result_folder_path = result_folder_base_path
         
         os.makedirs(result_folder_path, exist_ok=True)
     
@@ -166,7 +156,7 @@ def readersourcing(parameters : Parameters):
             {'Quantity': 'Author Score', 'Identifiers': authors.tolist(), 'Values': author_score.tolist()},
         ]
         
-        result_quantities_filename = "{}quantities.json".format(result_folder_path, parameters.current_day)
+        result_quantities_filename = "{}quantities.json".format(result_folder_path, current_day)
         
         if verbose:
             print("------------------------------")
@@ -195,8 +185,8 @@ def readersourcing(parameters : Parameters):
             rating_matrix[current_reader][current_paper] = current_rating
             goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
         
-        result_ratings_filename = "{}ratings.csv".format(result_folder_path, parameters.current_day)
-        result_goodness_filename = "{}goodness.csv".format(result_folder_path, parameters.current_day)
+        result_ratings_filename = "{}ratings.csv".format(result_folder_path, current_day)
+        result_goodness_filename = "{}goodness.csv".format(result_folder_path, current_day)
         
         if verbose:
             print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -227,7 +217,7 @@ def readersourcing(parameters : Parameters):
         
         dictionary = [{'Time': result_elapsed_time}]
         
-        result_info_filename = "{}info.json".format(result_folder_path, parameters.current_day)
+        result_info_filename = "{}info.json".format(result_folder_path, current_day)
         
         if verbose:
             print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -237,10 +227,10 @@ def readersourcing(parameters : Parameters):
             json.dump(dictionary, result_info_file)
         result_info_file.close()
         
-        if parameters.result_compression:
+        if result_compression:
             print("--------------------------------------")
             print("---------- COMPRESSING RESULTS ----------")
-            archive_filename = "{}{}.zip".format(result_folder_path, parameters.archive_name)
+            archive_filename = "{}{}.zip".format(result_folder_path, archive_name)
             archive_file = zipfile.ZipFile(archive_filename, 'w')
             for folder, subfolders, files in os.walk(result_folder_path):
                 for file in files:
@@ -260,6 +250,8 @@ def readersourcing(parameters : Parameters):
         
         return result_elapsed_time, file_paths
     
+    # Function to clean unwanted results
+    
     def clean_results(results_to_clean):
         print("--------------------------------------")
         print("---------- CLEANING RESULTS ----------")
@@ -276,24 +268,22 @@ def readersourcing(parameters : Parameters):
     
     # There are many "print" that you can uncomment if you have to do some debugging
     # print("##########")
-    
-    # ----- ALGORITHM STARTS HERE ----- #
-    
+        
     start_time = time.time()
     
     for index in range(csv_offset, (ratings_number + csv_offset)):
         
-        if parameters.days_serialization:
+        if days_serialization:
             if index % (ratings_number_per_day * computed_days) == 0:
-                parameters.current_day = computed_days
+                current_day = computed_days
                 written = False
                 cleaned = False
-                if parameters.days_serialization_cleaning and computed_days % parameters.days_cleaning_threshold == 0 and not cleaned:
+                if days_serialization_cleaning and computed_days % days_cleaning_threshold == 0 and not cleaned:
                      clean_results(result_file_paths)
                      result_file_paths = []
                      cleaned = True
-                if computed_days % parameters.days_serialization_threshold == 0 and not written:
-                    print("---------- DAY {}/{} ----------".format(parameters.current_day, parameters.days_number))
+                if computed_days % days_serialization_threshold == 0 and not written:
+                    print("---------- DAY {}/{} ----------".format(current_day, days_number))
                     elapsed_time, paths = serialize_result(index, verbose=False, parameters=parameters)
                     result_file_paths = result_file_paths + paths
                     written = True
@@ -429,40 +419,46 @@ def readersourcing(parameters : Parameters):
     #print("READER SCORE:      ", reader_score)
     #print("AUTHOR STEADINESS: ", author_steadiness)
     #print("AUTHOR SCORE:      ", author_score)
-    
 
 
-# In[21]:
+# In[3]:
 
 
 # Samples
 
-ground_truth_2 = Parameters(
-    dataset_name="ground_truth_2", 
-    dataset_folder_path="../data/{}/"
-)
+# ------------------------------
+# ---------- SAMPLE 1 ----------
+# ------------------------------
 
-seed_2_with_shuffle = Parameters(
-    dataset_name="seed_2_with_shuffle", 
-    dataset_folder_path="../data/{}/", 
-    data_shuffled=True, 
-    current_shuffle = 0,
-    shuffle_amount=100
-)
-
-try:
-    for index_shuffle in range(seed_2_with_shuffle.shuffle_amount):
-        print("---------------------------------")
-        print("----------- SHUFFLE {} -----------".format(index_shuffle))
-        seed_2_with_shuffle.current_shuffle = index_shuffle
-        readersourcing(seed_2_with_shuffle)
-except ValueError as error:
-    print(repr(error))
-
+# ground_truth_2 = ReadersourcingParameters(
+#     dataset_name="ground_truth_2", 
+#     dataset_folder_path="../data/{}/"
+# )
 # try:
 #     readersourcing(ground_truth_2)
 # except ValueError as error:
-#     print(repr(error))
+#      print(repr(error))
+
+# ------------------------------
+# ---------- SAMPLE 2 ----------
+# ------------------------------
+
+seed_shuffle_1 = ReadersourcingParameters(
+     dataset_name="seed_shuffle_1", 
+     dataset_folder_path="../data/{}/", 
+     data_shuffled=True, 
+     current_shuffle = 0,
+     shuffle_amount=100
+ )
+ 
+try:
+    for index_shuffle in range(seed_shuffle_1.shuffle_amount):
+        print("---------------------------------")
+        print("----------- SHUFFLE {} -----------".format(index_shuffle))
+        seed_shuffle_1.current_shuffle = index_shuffle
+        readersourcing(seed_shuffle_1)
+except ValueError as error:
+    print(repr(error))
 
 
 # In[ ]:
