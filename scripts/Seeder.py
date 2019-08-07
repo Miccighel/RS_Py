@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[146]:
+# In[115]:
 
 
 import pandas as pd
@@ -19,7 +19,7 @@ from scipy.stats import beta as beta
 
 # Parameter setting
 
-dataset_name = "seed_shuffle_1"
+dataset_name = "seed_shuffle_1_special"
 papers_number = 300
 readers_number = 1000
 authors_number = 40
@@ -60,7 +60,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[147]:
+# In[116]:
 
 
 # ------------------------------
@@ -100,7 +100,7 @@ for (index, papers_amount) in beta_distributions_frequencies:
             b = a
         if index == 2:
             # CASE 3: 0 < (a ^ b) < 1, 30% of papers
-            a = rn.uniform(0.001, 1)
+            a = rn.uniform(0.3, 1)
             b = rn.uniform(0.001, 1)
         if index == 3:
             # CASE 4: (a V b) == 1, (a > b V b > a), 20% of papers
@@ -122,12 +122,10 @@ for (index, papers_amount) in beta_distributions_frequencies:
         papers_set.remove(paper)
 print("{}/{} (100/100%)".format(papers_number, papers_number))
 
-print(generated_configurations)
-
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[148]:
+# In[117]:
 
 
 # Ratings file generation
@@ -150,7 +148,7 @@ for x in range(0, reader_sets_number):
     current_readers_set = np.random.choice(readers, readers_amount, False) 
     readers = np.setdiff1d(readers, current_readers_set)
     readers_sets.append(current_readers_set)
-    print("SET {}: {}".format(x, current_readers_set))
+    #print("SET {}: {}".format(x, current_readers_set))
 
 print("---------- READERS SETS GENERATION COMPLETED ----------")
 
@@ -160,7 +158,7 @@ generated_ratings = 0
 rated_papers = []
 with open(ratings_file_path, mode='w', newline='') as ratings_file:
     ratings_writer = csv.writer(ratings_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    ratings_writer.writerow(['Timestamp', 'Reader', 'Paper', 'Score'])
+    ratings_writer.writerow(['Timestamp', 'Reader', 'Paper', 'Score','Reader-Label'])
     for current_set in range(0, reader_sets_number):
         frequency = paper_frequencies[current_set]
         readers_set = readers_sets[current_set]
@@ -178,7 +176,8 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                     generated_ratings, 
                     reader, 
                     paper, 
-                    generated_rating
+                    generated_rating,
+                    "R#{}".format(reader)
                 ])
                 rated_papers.append(paper)
                 generated_ratings+=1
@@ -196,7 +195,8 @@ with open(ratings_file_path, mode='w', newline='') as ratings_file:
                     generated_ratings, 
                     reader, 
                     paper,
-                    generated_rating
+                    generated_rating,
+                    "R#{}".format(reader)
                 ])
                 generated_ratings+=1
         
@@ -214,7 +214,7 @@ paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[149]:
+# In[118]:
 
 
 # Authors file generation
@@ -244,7 +244,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[150]:
+# In[119]:
 
 
 # Info file generation
@@ -265,7 +265,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[151]:
+# In[120]:
 
 
 # Stats file generation
@@ -273,6 +273,7 @@ print("---------- INFO GENERATION ENDED ----------")
 print("---------- STATS GENERATION STARTED ----------")
 
 temp_ratings_dataframe = pd.read_csv(ratings_file_path)
+temp_ratings_dataframe = temp_ratings_dataframe.loc[:, temp_ratings_dataframe.columns != "Reader-Label"]
 temp_ratings_dataframe[temp_ratings_dataframe.columns] = temp_ratings_dataframe[temp_ratings_dataframe.columns].apply(pd.to_numeric)
 
 stats_dataframe = temp_ratings_dataframe.copy()
@@ -339,7 +340,7 @@ stats_dataframe.to_csv(stats_file_path, index=False)
 print("---------- STATS GENERATION COMPLETED ----------")
 
 
-# In[145]:
+# In[121]:
 
 
 # Data generation for experiments
@@ -355,30 +356,51 @@ papers_identifiers = gaussian_beta_distributions["papers_ids"]
 for paper in papers_identifiers:
     mean = (paper_distributions[paper][0]/(paper_distributions[paper][0] + paper_distributions[paper][1]))
     SR1_rating_id = generated_ratings
-    SR1_reader = "SR#{}".format(readers_number)
+    SR1_reader = readers_number
     SR1_paper = paper
-    SR1_rating_score = mean
+    SR1_rating_score = round(mean,2)
+    SR1_reader_label = "SR#1"
     SR2_rating_id = generated_ratings+1
-    SR2_reader = "SR#{}".format(readers_number+1)
+    SR2_reader = readers_number+1
     SR2_paper = paper
+    SR2_reader_label = "SR#2"
     SR3_rating_id = generated_ratings+2
-    SR3_reader = "SR#{}".format(readers_number+2)
+    SR3_reader = readers_number+2
     SR3_paper = paper
+    SR3_reader_label = "SR#3"
     if mean <= 0.5:
         SR2_rating_score = 0
-        SR3_rating_score = (1-mean)/2
+        SR3_rating_score = round(((1-mean)/2),2)
     else:
-        SR2_rating_score = 0
-        SR3_rating_score = mean/2
-    #print([SR1_rating_id, SR1_reader, SR1_paper, SR1_rating_score])
-    #print([SR2_rating_id, SR2_reader, SR2_paper, SR2_rating_score])
-    #print([SR3_rating_id, SR3_reader, SR3_paper, SR3_rating_score])
+        SR2_rating_score = 100
+        SR3_rating_score = round((mean/2),2)
+    with open(ratings_file_path, mode='a', newline='') as ratings_file:
+        ratings_writer = csv.writer(ratings_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        ratings_writer.writerow([SR1_rating_id, SR1_reader, SR1_paper, SR1_rating_score, SR1_reader_label])
+        ratings_writer.writerow([SR2_rating_id, SR2_reader, SR2_paper, SR2_rating_score, SR2_reader_label])
+        ratings_writer.writerow([SR3_rating_id, SR3_reader, SR3_paper, SR3_rating_score, SR3_reader_label])
+    ratings_file.close()
     generated_ratings = generated_ratings + 3
+ratings_number = generated_ratings
+readers_number = readers_number + 3
+    
+# Updating info file
+
+info_dataframe = pd.DataFrame(columns=["Dataset", "Paper", "Reader", "Rating", "Author"])
+info_dataframe = info_dataframe.append(
+    {
+        "Dataset": dataset_name, 
+        "Paper": papers_number, 
+        "Reader": readers_number, 
+        "Rating": ratings_number, 
+        "Author": authors_number
+    }, ignore_index=True)
+info_dataframe.to_csv(info_file_path, index=False)
 
 print("---------- SPECIAL RATINGS COMPLETED  ----------")
 
 
-# In[ ]:
+# In[122]:
 
 
 # ------------------------------
@@ -388,6 +410,7 @@ print("---------- SPECIAL RATINGS COMPLETED  ----------")
 print("---------- RATINGS SHUFFLING STARTED ----------")
 
 if shuffling:
+    paper_ratings = pd.read_csv(ratings_file_path)
     os.makedirs(dataset_shuffle_folder_path, exist_ok=True)
     for s in range(shuffle_number):
         c = 0

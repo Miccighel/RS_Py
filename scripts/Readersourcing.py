@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[14]:
 
 
 import pandas as pd
@@ -294,7 +294,7 @@ def readersourcing(parameters : ReadersourcingParameters):
             print("{}/{} ({}/100%)".format(int(index), ratings_number, int(percentage)))
                     
         entry = linecache.getline(ratings_filename, index).split(",")
-                
+                        
         # Example: <1,1,2,0.8,0>
         # At Timestamp 1 Reader 1 gave to Paper 2 a Rating of 0.8
         timestamp = int(entry[0])
@@ -359,7 +359,7 @@ def readersourcing(parameters : ReadersourcingParameters):
             raw_previous_ratings.popleft()
         rating_file.close()
         for raw_previous_rating in raw_previous_ratings:
-            previous_rating = raw_previous_rating.split(",")
+            previous_rating = raw_previous_rating.split(",")[:-1]
             previous_ratings.append(previous_rating)
         previous_ratings = np.array(previous_ratings, dtype=float)
         previous_ratings = previous_ratings[
@@ -421,7 +421,7 @@ def readersourcing(parameters : ReadersourcingParameters):
     #print("AUTHOR SCORE:      ", author_score)
 
 
-# In[3]:
+# In[15]:
 
 
 # Samples
@@ -443,22 +443,57 @@ def readersourcing(parameters : ReadersourcingParameters):
 # ---------- SAMPLE 2 ----------
 # ------------------------------
 
-seed_shuffle_1 = ReadersourcingParameters(
-     dataset_name="seed_shuffle_1", 
+# seed_p_1_beta = ReadersourcingParameters(
+#     dataset_name="seed_1/p_1_beta", 
+#     dataset_folder_path="../data/{}/", 
+#     days_serialization=True,
+#     days_number=30,
+#     days_serialization_threshold=5,
+#  )
+# 
+# readersourcing(seed_p_1_beta)
+ 
+# ------------------------------
+# ---------- SAMPLE 3 ----------
+# ------------------------------
+
+# seed_shuffle_1 = ReadersourcingParameters(
+#      dataset_name="seed_shuffle_1", 
+#      dataset_folder_path="../data/{}/", 
+#      data_shuffled=True, 
+#      current_shuffle = 0,
+#      shuffle_amount=100
+#  )
+#  
+# try:
+#     for index_shuffle in range(seed_shuffle_1.shuffle_amount):
+#         print("---------------------------------")
+#         print("----------- SHUFFLE {} -----------".format(index_shuffle))
+#         seed_shuffle_1.current_shuffle = index_shuffle
+#         readersourcing(seed_shuffle_1)
+# except ValueError as error:
+#     print(repr(error))
+
+# ------------------------------
+# ---------- SAMPLE 4 ----------
+# ------------------------------
+
+seed_shuffle_1_special = ReadersourcingParameters(
+     dataset_name="seed_shuffle_1_special", 
      dataset_folder_path="../data/{}/", 
      data_shuffled=True, 
      current_shuffle = 0,
      shuffle_amount=100
  )
  
-try:
-    for index_shuffle in range(seed_shuffle_1.shuffle_amount):
-        print("---------------------------------")
-        print("----------- SHUFFLE {} -----------".format(index_shuffle))
-        seed_shuffle_1.current_shuffle = index_shuffle
-        readersourcing(seed_shuffle_1)
-except ValueError as error:
-    print(repr(error))
+#try:
+for index_shuffle in range(seed_shuffle_1_special.shuffle_amount):
+    print("---------------------------------")
+    print("----------- SHUFFLE {} -----------".format(index_shuffle))
+    seed_shuffle_1_special.current_shuffle = index_shuffle
+    readersourcing(seed_shuffle_1_special)
+#except ValueError as error:
+#    print(repr(error))
 
 
 # In[ ]:
