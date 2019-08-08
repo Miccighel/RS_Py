@@ -1,2 +1,2 @@
 Dataset,Max Number Rating Paper,Min Number Rating Paper,Mean Number Rating Paper,Number Papers Unique Ratings,Max Number Rating Reader,Min Number Rating Reader,Mean Number Rating ReaderNumber Readers Unique Rating,Mean Number Rating Reader,Number Readers Unique Rating
-seed_shuffle_1_special,10000,9971,9989,0,4,3,,3.0,0.0
+seed_shuffle_1_special,9659,9637,9649,0,4,3,,3.0,0.0

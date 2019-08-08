@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[115]:
+# In[21]:
 
 
 import pandas as pd
@@ -60,7 +60,7 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[116]:
+# In[22]:
 
 
 # ------------------------------
@@ -125,7 +125,7 @@ print("{}/{} (100/100%)".format(papers_number, papers_number))
 print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[117]:
+# In[23]:
 
 
 # Ratings file generation
@@ -214,7 +214,7 @@ paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[118]:
+# In[24]:
 
 
 # Authors file generation
@@ -244,7 +244,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[119]:
+# In[25]:
 
 
 # Info file generation
@@ -265,7 +265,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[120]:
+# In[26]:
 
 
 # Stats file generation
@@ -340,7 +340,7 @@ stats_dataframe.to_csv(stats_file_path, index=False)
 print("---------- STATS GENERATION COMPLETED ----------")
 
 
-# In[121]:
+# In[27]:
 
 
 # Data generation for experiments
@@ -372,7 +372,7 @@ for paper in papers_identifiers:
         SR2_rating_score = 0
         SR3_rating_score = round(((1-mean)/2),2)
     else:
-        SR2_rating_score = 100
+        SR2_rating_score = 1.0
         SR3_rating_score = round((mean/2),2)
     with open(ratings_file_path, mode='a', newline='') as ratings_file:
         ratings_writer = csv.writer(ratings_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -400,7 +400,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- SPECIAL RATINGS COMPLETED  ----------")
 
 
-# In[122]:
+# In[28]:
 
 
 # ------------------------------

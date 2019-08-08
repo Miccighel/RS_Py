@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[14]:
+# In[2]:
 
 
 import pandas as pd
@@ -38,18 +38,6 @@ def readersourcing(parameters : ReadersourcingParameters):
              raise ValueError('this must be correct: current_shuffle >= 0')
          if parameters.shuffle_amount < 0:
              raise ValueError('this must be correct: shuffle_amount >= 0')
-        
-    # Parameters unpacking
-    
-    dataset_folder_path = parameters.dataset_folder_path
-    days_serialization = parameters.days_serialization
-    days_serialization_threshold = parameters.days_serialization_threshold
-    days_serialization_cleaning = parameters.days_serialization_cleaning
-    days_cleaning_threshold = parameters.days_cleaning_threshold
-    days_number = parameters.days_number
-    current_day = parameters.current_day
-    data_shuffled = parameters.data_shuffled
-    current_shuffle = parameters.current_shuffle
 
     # Reader score must be set to a very small value otherwise there will be a division by 0
     
@@ -57,9 +45,9 @@ def readersourcing(parameters : ReadersourcingParameters):
     
     # CSV file parsing
     
-    info_filename = "{}info.csv".format(dataset_folder_path)
-    ratings_filename = "{}ratings.csv".format(dataset_folder_path)
-    authors_filename = "{}authors.csv".format(dataset_folder_path)
+    info_filename = "{}info.csv".format(parameters.dataset_folder_path)
+    ratings_filename = "{}ratings.csv".format(parameters.dataset_folder_path)
+    authors_filename = "{}authors.csv".format(parameters.dataset_folder_path)
     
     info = pd.read_csv(info_filename)
     paper_authors = pd.read_csv(authors_filename)
@@ -91,16 +79,16 @@ def readersourcing(parameters : ReadersourcingParameters):
     
     # Day serialization handling
     
-    if days_serialization:
-        ratings_number_per_day = m.floor(int(ratings_number / days_number))
+    if parameters.days_serialization:
+        ratings_number_per_day = m.floor(int(ratings_number / parameters.days_number))
         computed_days = 1
         written = False
         # cleaned = False
         
     # Data shuffling handling
     
-    if data_shuffled:
-        ratings_filename = "{}shuffle/shuffle_{}.csv".format(dataset_folder_path, current_shuffle)
+    if parameters.data_shuffled:
+        ratings_filename = "{}shuffle/shuffle_{}.csv".format(parameters.dataset_folder_path, parameters.current_shuffle)
     
     # Output handling
     
@@ -124,24 +112,14 @@ def readersourcing(parameters : ReadersourcingParameters):
     # Function to output result to file
     
     def serialize_result(current_index, verbose, parameters):
-        
-        # Parameters  unpacking
-        
-        days_serialization = parameters.days_serialization
-        current_day = parameters.current_day
-        data_shuffled = parameters.data_shuffled
-        current_shuffle = parameters.current_shuffle
-        result_compression = parameters.result_compression
-        archive_name =  parameters.archive_name
-        result_folder_base_path = parameters.result_folder_base_path 
                          
-        if data_shuffled:
-            result_folder_path = "../models/{}/readersourcing/shuffle/shuffle_{}/".format(dataset_name, current_shuffle)
+        if parameters.data_shuffled:
+            result_folder_path = "../models/{}/readersourcing/shuffle/shuffle_{}/".format(dataset_name, parameters.current_shuffle)
         else:
-            if days_serialization:
-                result_folder_path = "{}day_{}/".format(result_folder_base_path, current_day)
+            if parameters.days_serialization:
+                result_folder_path = "{}day_{}/".format(parameters.result_folder_base_path, parameters.current_day)
             else:
-                result_folder_path = result_folder_base_path
+                result_folder_path = parameters.result_folder_base_path
         
         os.makedirs(result_folder_path, exist_ok=True)
     
@@ -156,7 +134,7 @@ def readersourcing(parameters : ReadersourcingParameters):
             {'Quantity': 'Author Score', 'Identifiers': authors.tolist(), 'Values': author_score.tolist()},
         ]
         
-        result_quantities_filename = "{}quantities.json".format(result_folder_path, current_day)
+        result_quantities_filename = "{}quantities.json".format(result_folder_path, parameters.current_day)
         
         if verbose:
             print("------------------------------")
@@ -185,8 +163,8 @@ def readersourcing(parameters : ReadersourcingParameters):
             rating_matrix[current_reader][current_paper] = current_rating
             goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
         
-        result_ratings_filename = "{}ratings.csv".format(result_folder_path, current_day)
-        result_goodness_filename = "{}goodness.csv".format(result_folder_path, current_day)
+        result_ratings_filename = "{}ratings.csv".format(result_folder_path, parameters.current_day)
+        result_goodness_filename = "{}goodness.csv".format(result_folder_path, parameters.current_day)
         
         if verbose:
             print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -217,7 +195,7 @@ def readersourcing(parameters : ReadersourcingParameters):
         
         dictionary = [{'Time': result_elapsed_time}]
         
-        result_info_filename = "{}info.json".format(result_folder_path, current_day)
+        result_info_filename = "{}info.json".format(result_folder_path, parameters.current_day)
         
         if verbose:
             print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -227,10 +205,10 @@ def readersourcing(parameters : ReadersourcingParameters):
             json.dump(dictionary, result_info_file)
         result_info_file.close()
         
-        if result_compression:
+        if parameters.result_compression:
             print("--------------------------------------")
             print("---------- COMPRESSING RESULTS ----------")
-            archive_filename = "{}{}.zip".format(result_folder_path, archive_name)
+            archive_filename = "{}{}.zip".format(result_folder_path, parameters.archive_name)
             archive_file = zipfile.ZipFile(archive_filename, 'w')
             for folder, subfolders, files in os.walk(result_folder_path):
                 for file in files:
@@ -273,17 +251,17 @@ def readersourcing(parameters : ReadersourcingParameters):
     
     for index in range(csv_offset, (ratings_number + csv_offset)):
         
-        if days_serialization:
+        if parameters.days_serialization:
             if index % (ratings_number_per_day * computed_days) == 0:
-                current_day = computed_days
+                parameters.current_day = computed_days
                 written = False
                 cleaned = False
-                if days_serialization_cleaning and computed_days % days_cleaning_threshold == 0 and not cleaned:
+                if parameters.days_serialization_cleaning and computed_days % parameters.days_cleaning_threshold == 0 and not cleaned:
                      clean_results(result_file_paths)
                      result_file_paths = []
                      cleaned = True
-                if computed_days % days_serialization_threshold == 0 and not written:
-                    print("---------- DAY {}/{} ----------".format(current_day, days_number))
+                if computed_days % parameters.days_serialization_threshold == 0 and not written:
+                    print("---------- DAY {}/{} ----------".format(parameters.current_day, parameters.days_number))
                     elapsed_time, paths = serialize_result(index, verbose=False, parameters=parameters)
                     result_file_paths = result_file_paths + paths
                     written = True
@@ -359,7 +337,11 @@ def readersourcing(parameters : ReadersourcingParameters):
             raw_previous_ratings.popleft()
         rating_file.close()
         for raw_previous_rating in raw_previous_ratings:
-            previous_rating = raw_previous_rating.split(",")[:-1]
+            splitted_raw_previous_rating = raw_previous_rating.split(",")
+            if len(splitted_raw_previous_rating) > 4:
+                previous_rating = splitted_raw_previous_rating[:-1]
+            else: 
+                previous_rating = splitted_raw_previous_rating
             previous_ratings.append(previous_rating)
         previous_ratings = np.array(previous_ratings, dtype=float)
         previous_ratings = previous_ratings[
@@ -370,7 +352,7 @@ def readersourcing(parameters : ReadersourcingParameters):
         # print(" ----- PREVIOUS PAPER RATINGS -----")
     
         for previous_index, previous_entry in enumerate(previous_ratings):
-            
+                        
             # Example: <1,1,2,0.8,0>
             # At Timestamp 1 Reader 1 gave to Paper 2 a Rating of 0.8 written by Author 0
             previous_timestamp = int(previous_entry[0])
@@ -421,7 +403,7 @@ def readersourcing(parameters : ReadersourcingParameters):
     #print("AUTHOR SCORE:      ", author_score)
 
 
-# In[15]:
+# In[3]:
 
 
 # Samples
@@ -431,11 +413,11 @@ def readersourcing(parameters : ReadersourcingParameters):
 # ------------------------------
 
 # ground_truth_2 = ReadersourcingParameters(
-#     dataset_name="ground_truth_2", 
-#     dataset_folder_path="../data/{}/"
+#      dataset_name="ground_truth_2", 
+#      dataset_folder_path="../data/{}/",
 # )
 # try:
-#     readersourcing(ground_truth_2)
+#    readersourcing(ground_truth_2)
 # except ValueError as error:
 #      print(repr(error))
 
@@ -449,9 +431,12 @@ def readersourcing(parameters : ReadersourcingParameters):
 #     days_serialization=True,
 #     days_number=30,
 #     days_serialization_threshold=5,
-#  )
-# 
-# readersourcing(seed_p_1_beta)
+# )
+#    
+# try:
+#    readersourcing(seed_p_1_beta)
+# except ValueError as error:
+#     print(repr(error))
  
 # ------------------------------
 # ---------- SAMPLE 3 ----------
@@ -484,16 +469,16 @@ seed_shuffle_1_special = ReadersourcingParameters(
      data_shuffled=True, 
      current_shuffle = 0,
      shuffle_amount=100
- )
+)
  
-#try:
-for index_shuffle in range(seed_shuffle_1_special.shuffle_amount):
-    print("---------------------------------")
-    print("----------- SHUFFLE {} -----------".format(index_shuffle))
-    seed_shuffle_1_special.current_shuffle = index_shuffle
-    readersourcing(seed_shuffle_1_special)
-#except ValueError as error:
-#    print(repr(error))
+try:
+    for index_shuffle in range(seed_shuffle_1_special.shuffle_amount):
+        print("---------------------------------")
+        print("----------- SHUFFLE {} -----------".format(index_shuffle))
+        seed_shuffle_1_special.current_shuffle = index_shuffle
+        readersourcing(seed_shuffle_1_special)
+except ValueError as error:
+    print(repr(error))
 
 
 # In[ ]:
