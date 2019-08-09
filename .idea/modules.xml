@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/RS_Py.iml" filepath="$PROJECT_DIR$/.idea/RS_Py.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../../../../Dottorato/Progetti/Readersourcing-HITS/Sorgenti/.idea/Readersourcing-HITS.iml" filepath="$PROJECT_DIR$/../../../../../Dottorato/Progetti/Readersourcing-HITS/Sorgenti/.idea/Readersourcing-HITS.iml" />
     </modules>
   </component>
 </project>

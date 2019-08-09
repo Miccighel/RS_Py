@@ -463,6 +463,24 @@ def readersourcing(parameters : ReadersourcingParameters):
 # ---------- SAMPLE 4 ----------
 # ------------------------------
 
+# seed_shuffle_1_special = ReadersourcingParameters(
+#      dataset_name="seed_shuffle_1_special", 
+#      dataset_folder_path="../data/{}/", 
+#      data_shuffled=True, 
+#      current_shuffle = 0,
+#      shuffle_amount=100
+# )
+#  
+# try:
+#     for index_shuffle in range(seed_shuffle_1_special.shuffle_amount):
+#         print("---------------------------------")
+#         print("----------- SHUFFLE {} -----------".format(index_shuffle))
+#         seed_shuffle_1_special.current_shuffle = index_shuffle
+#         readersourcing(seed_shuffle_1_special)
+# except ValueError as error:
+#     print(repr(error))
+
+
 seed_shuffle_1_special = ReadersourcingParameters(
      dataset_name="seed_shuffle_1_special", 
      dataset_folder_path="../data/{}/", 
@@ -478,7 +496,7 @@ try:
         seed_shuffle_1_special.current_shuffle = index_shuffle
         readersourcing(seed_shuffle_1_special)
 except ValueError as error:
-    print(repr(error))
+     print(repr(error))
 
 
 # In[ ]:

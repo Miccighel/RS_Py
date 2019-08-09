@@ -22,7 +22,7 @@ from scipy.stats import beta as beta
 dataset_name = "seed_shuffle_1_special"
 papers_number = 300
 readers_number = 1000
-authors_number = 40
+authors_number = 20
 months_number = 1
 paper_frequencies = [
     2 * months_number, 
@@ -34,7 +34,7 @@ paper_frequencies = [
 shuffling = True
 shuffle_number = 100
 
-assert (papers_number > (sum(paper_frequencies)) and (papers_number % 10) == 0),     "ERROR: papers_number must be greater than (equal to) {} and it must be a multiple of 10.".format(sum(paper_frequencies)) 
+assert (papers_number >= (sum(paper_frequencies)) and (papers_number % 10) == 0),     "ERROR: papers_number must be greater than (equal to) {} and it must be a multiple of 10.".format(sum(paper_frequencies)) 
 
 # Seed folder path
 
@@ -369,7 +369,7 @@ for paper in papers_identifiers:
     SR3_paper = paper
     SR3_reader_label = "SR#3"
     if mean <= 0.5:
-        SR2_rating_score = 0
+        SR2_rating_score = 0.01
         SR3_rating_score = round(((1-mean)/2),2)
     else:
         SR2_rating_score = 1.0
