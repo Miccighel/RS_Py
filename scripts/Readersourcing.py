@@ -15,7 +15,7 @@ import numpy as np
 import os
 import json
 import time
-from ReadersourcingParameters import ReadersourcingParameters
+from Readersourcing import ReadersourcingParameters
 
 # Scroll to the bottom for the samples section
 
