@@ -87,10 +87,15 @@ class ReadersourcingToolkit:
             identifiers_amount = round((len(identifiers) * identifiers_perc) / 100)
             identifiers = identifiers[:identifiers_amount]
         quantity = row.at[0, "Values"]
+        counter = 0
         for index, identifier in enumerate(identifiers):
             quantity_df = quantity_df.append({"Identifier": identifier, "Quantity": quantity[index]}, ignore_index=True)
+            counter = counter + 1
+            percentage = 100 * counter / len(identifiers)
+            if percentage % 10 == 0:
+                print("{}/{} ({}/100%)".format(int(counter), len(identifiers), int(percentage)))
         quantity_df["Identifier"] = quantity_df["Identifier"].astype(int)
-        print("{}/{} (100/100%)".format(self.shuffle_amount, self.shuffle_amount))
+        print("{}/{} (100/100%)".format(len(identifiers), len(identifiers)))
         return quantity_df
 
     # Returns a dataframe with three columns
