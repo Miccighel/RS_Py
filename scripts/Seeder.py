@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[21]:
+# In[249]:
 
 
 import pandas as pd
@@ -11,7 +11,11 @@ import os
 import collections
 import csv
 import random as rn
+import seaborn as sns
+import scipy.stats as stats
+from itertools import islice
 from scipy.stats import beta as beta
+import matplotlib.pyplot as plt
 
 # ------------------------------
 # ----- PARAMETERS & SETUP -----
@@ -19,22 +23,12 @@ from scipy.stats import beta as beta
 
 # Parameter setting
 
-dataset_name = "seed_shuffle_1_special"
-papers_number = 300
-readers_number = 1000
+dataset_name = "seed_power_law_1"
 authors_number = 20
 months_number = 1
-paper_frequencies = [
-    2 * months_number, 
-    6 * months_number, 
-    8 * months_number, 
-    14 * months_number, 
-    20 * months_number
-]
-shuffling = True
+readers_classes = 30
+shuffling = False
 shuffle_number = 100
-
-assert (papers_number >= (sum(paper_frequencies)) and (papers_number % 10) == 0),     "ERROR: papers_number must be greater than (equal to) {} and it must be a multiple of 10.".format(sum(paper_frequencies)) 
 
 # Seed folder path
 
@@ -45,12 +39,6 @@ ratings_file_path = "{}ratings.csv".format(dataset_folder_path)
 authors_file_path = "{}authors.csv".format(dataset_folder_path)
 stats_file_path = "{}stats.csv".format(dataset_folder_path)
 
-# Setting up arrays
-
-papers = np.arange(papers_number)
-readers = np.arange(readers_number)
-authors = np.arange(authors_number)
-
 os.makedirs(dataset_folder_path, exist_ok=True)
 
 print("DATASET NAME: ", dataset_name)
@@ -60,16 +48,67 @@ print("RATINGS FILE PATH: ", ratings_file_path)
 print("AUTHORS FILE PATH: ", authors_file_path)
 
 
-# In[22]:
+# In[250]:
 
 
 # ------------------------------
 # ---- CORE IMPLEMENTATION -----
 # ------------------------------
 
+print("---------- READERS DISTRIBUTION GENERATION STARTED ----------")
+
+# Return first n items of the iterable as a list
+
+def take(n, iterable):
+    return list(islice(iterable, n))
+
+def truncated_power_law(a, m):
+    x = np.arange(1, m+1, dtype='float')
+    pmf = 1/x**a
+    pmf /= pmf.sum()
+    return stats.rv_discrete(values=(range(1, m+1), pmf))
+
+a, m = .7, readers_classes
+d = truncated_power_law(a=a, m=m)
+n = 10000
+sample = d.rvs(size=n)
+ax = sns.distplot(sample, bins=np.arange(m)+0.5, kde=False)
+ax.set(xlabel="Reader Class", ylabel= "Ratings Number")
+fig = ax.get_figure()
+path = "{}/power-law-readers.pdf".format(dataset_folder_path)
+fig.savefig(path, bbox_inches='tight')
+
+readers_number = int((m*(m+1))/2)
+ratings_number = 0
+reader_rating_frequency = list(collections.Counter(sample).most_common())
+for readers_amount,rating_frequency in reader_rating_frequency:
+    ratings_number += readers_amount * rating_frequency
+min_papers_number = collections.Counter(sample).most_common()[0][1]
+papers_number = min_papers_number
+
+print(f"Generated readers: {readers_number}")
+print(f"Distinct readers classes: {readers_classes} (i.e., m)")
+print(f"Total amount of ratings to generate:  {ratings_number}")
+print(f"Minimum number of papers to generate: {min_papers_number}")
+for readers_amount, rating_frequency in take(10, reader_rating_frequency):
+    print(f"There are {readers_amount} readers which give {rating_frequency} ratings")
+print("Etc.")
+
+# Setting up arrays
+
+papers = np.arange(papers_number)
+readers = np.arange(readers_number)
+authors = np.arange(authors_number)
+
+print("---------- READERS DISTRIBUTION GENERATION COMPLETED ----------")
+
+
+# In[251]:
+
+
 # Papers distribution generation with beta distribution
 
-print("---------- PAPER DISTRIBUTIONS GENERATION STARTED ----------")
+print("---------- INTRA-PAPER DISTRIBUTIONS GENERATION STARTED ----------")
 
 generated_configurations = {"0":{},"1":{},"2":{},"3":{},"4":{}}
 
@@ -84,6 +123,8 @@ paper_distributions = [None] * papers_number
 
 generated_papers_distributions = 0
 for (index, papers_amount) in beta_distributions_frequencies:
+    if papers_amount > len(papers_set):
+        papers_amount = len(papers_set)
     current_paper_set = rn.sample(papers_set, papers_amount)
     generated_configurations["{}".format(index)]["papers_ids"] = current_paper_set
     generated_configurations["{}".format(index)]["papers_amount"] = papers_amount
@@ -122,35 +163,31 @@ for (index, papers_amount) in beta_distributions_frequencies:
         papers_set.remove(paper)
 print("{}/{} (100/100%)".format(papers_number, papers_number))
 
-print("---------- PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
+print("---------- INTRA-PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[23]:
+# In[252]:
 
 
-# Ratings file generation
+print("---------- READERS SAMPLING STARTED ----------")
 
-# N sets of readers, each one has X% of the total
+readers_configurations = []
+# key: amount of ratings to generate, value: readers identifiers
 
-readers_percent = 20
-reader_sets_number = m.floor(100 / readers_percent)
-readers_amount = m.floor((readers_number*readers_percent)/100)
+samples_amount = 0
+for readers_amount, rating_frequency in reader_rating_frequency:
+    sampled_readers = np.random.choice(readers, readers_amount, False) 
+    readers = np.setdiff1d(readers, sampled_readers)
+    readers_configurations.append((readers_amount, rating_frequency, sampled_readers))
+    percentage = round(100*samples_amount/readers_number)
+    samples_amount += readers_amount
+    print(f"Sampled Readers: {samples_amount} Remaining Readers: {len(readers)}")
 
-readers_sets = []
+print("---------- READERS SAMPLING COMPLETED ----------")
 
-# Readers rate papers with a certain frequency
 
-print("---------- READERS SETS GENERATION STARTED ----------")
+# In[253]:
 
-ratings_number = sum(paper_frequencies) * readers_amount
-
-for x in range(0, reader_sets_number):
-    current_readers_set = np.random.choice(readers, readers_amount, False) 
-    readers = np.setdiff1d(readers, current_readers_set)
-    readers_sets.append(current_readers_set)
-    #print("SET {}: {}".format(x, current_readers_set))
-
-print("---------- READERS SETS GENERATION COMPLETED ----------")
 
 print("---------- RATINGS GENERATION STARTED ----------")
 
@@ -159,11 +196,9 @@ rated_papers = []
 with open(ratings_file_path, mode='w', newline='') as ratings_file:
     ratings_writer = csv.writer(ratings_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     ratings_writer.writerow(['Timestamp', 'Reader', 'Paper', 'Score','Reader-Label'])
-    for current_set in range(0, reader_sets_number):
-        frequency = paper_frequencies[current_set]
-        readers_set = readers_sets[current_set]
-        for reader in readers_set:
-            sample = np.random.choice(papers, frequency, False)     
+    for readers_amount, rating_frequency, sampled_readers in readers_configurations:    
+        for reader in sampled_readers:
+            sample = np.random.choice(papers, rating_frequency, False)     
             for paper in sample:    
                 paper_distribution = beta(paper_distributions[paper][0],paper_distributions[paper][1])
                 percentage = 100*generated_ratings/ratings_number
@@ -214,7 +249,7 @@ paper_ratings.to_csv(ratings_file_path, index=False, header=True, sep=",")
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[24]:
+# In[254]:
 
 
 # Authors file generation
@@ -244,7 +279,7 @@ authors_file.close()
 print("---------- AUTHORS GENERATION ENDED ----------")
 
 
-# In[25]:
+# In[255]:
 
 
 # Info file generation
@@ -265,7 +300,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[26]:
+# In[256]:
 
 
 # Stats file generation
@@ -340,7 +375,7 @@ stats_dataframe.to_csv(stats_file_path, index=False)
 print("---------- STATS GENERATION COMPLETED ----------")
 
 
-# In[27]:
+# In[ ]:
 
 
 # Data generation for experiments
@@ -400,7 +435,7 @@ info_dataframe.to_csv(info_file_path, index=False)
 print("---------- SPECIAL RATINGS COMPLETED  ----------")
 
 
-# In[28]:
+# In[ ]:
 
 
 # ------------------------------

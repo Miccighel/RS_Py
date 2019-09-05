@@ -442,14 +442,14 @@ def readersourcing(parameters : ReadersourcingToolkit):
 # ---------- SAMPLE 3 ----------
 # ------------------------------
 
-seed = ReadersourcingToolkit(
-    dataset_name="seed_1/p_1_beta", 
-    dataset_folder_path="../data/{}/", 
-)
-try:
-   readersourcing(seed)
-except ValueError as error:
-    print(repr(error))
+# seed = ReadersourcingToolkit(
+#     dataset_name="seed_1/p_1_beta", 
+#     dataset_folder_path="../data/{}/", 
+# )
+# try:
+#    readersourcing(seed)
+# except ValueError as error:
+#     print(repr(error))
  
 # ------------------------------
 # ---------- SAMPLE 3 ----------
@@ -492,6 +492,19 @@ except ValueError as error:
 #         readersourcing(seed)
 # except ValueError as error:
 #      print(repr(error))
+
+# ------------------------------
+# ---------- SAMPLE 5 ----------
+# ------------------------------
+
+seed = ReadersourcingToolkit(
+    dataset_name="seed_power_law_1", 
+    dataset_folder_path="../data/{}/", 
+)
+try:
+   readersourcing(seed)
+except ValueError as error:
+    print(repr(error))
 
 
 # In[ ]:
