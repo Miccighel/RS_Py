@@ -497,12 +497,21 @@ def readersourcing(parameters : ReadersourcingToolkit):
 # ---------- SAMPLE 5 ----------
 # ------------------------------
 
+
 seed = ReadersourcingToolkit(
-    dataset_name="seed_power_law_1", 
-    dataset_folder_path="../data/{}/", 
-)
+     dataset_name="seed_power_law_1_shuffle",
+     dataset_folder_path="../data/{}/",
+     data_shuffled=True,
+     current_shuffle = 0,
+     shuffle_amount=100
+ )
+
 try:
-   readersourcing(seed)
+    for index_shuffle in range(seed.shuffle_amount):
+        print("---------------------------------")
+        print("----------- SHUFFLE {} -----------".format(index_shuffle))
+        seed.current_shuffle = index_shuffle
+        readersourcing(seed)
 except ValueError as error:
     print(repr(error))
 
