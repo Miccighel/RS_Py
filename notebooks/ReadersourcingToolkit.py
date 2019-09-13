@@ -26,6 +26,8 @@ class ReadersourcingToolkit:
 
         self.dataset_name = dataset_name
         self.dataset_folder_path = dataset_folder_path.format(dataset_name)
+        self.dataset_entries_path = "{}/entries/".format(self.dataset_folder_path)
+        self.dataset_shuffle_path = "{}/shuffle/".format(self.dataset_folder_path)
 
         self.days_serialization = days_serialization
         self.days_serialization_threshold = days_serialization_threshold
@@ -40,9 +42,11 @@ class ReadersourcingToolkit:
         self.archive_name = archive_name
 
         self.result_folder_base_path = "../models/{}/readersourcing/".format(dataset_name)
+        self.result_days_path = "{}days/".format(self.result_folder_base_path)
+        self.result_shuffle_base_path = "{}shuffle/".format(self.result_folder_base_path)
         paths = []
         for shuffle_index in range(shuffle_amount):
-            paths.append("{}shuffle_{}/".format(self.result_folder_base_path, shuffle_index))
+            paths.append("{}shuffle_{}/".format(self.result_shuffle_base_path, shuffle_index))
         self.result_shuffle_paths = paths
 
     # ----------------------------------------------
@@ -53,7 +57,7 @@ class ReadersourcingToolkit:
     # First column: identifiers of the chosen entity
     def extract_identifiers(self, entity):
         identifiers_df = pd.DataFrame(columns=["Identifier"])
-        quantities = pd.read_json("{}/quantities.json".format(self.result_folder_base_path))
+        quantities = pd.read_json("{}quantities.json".format(self.result_folder_base_path))
         if entity == "Paper":
             identifiers = quantities.at[1, "Identifiers"]
         else:
@@ -79,7 +83,7 @@ class ReadersourcingToolkit:
     # Second column: values of the parsed quantity
     def build_quantity_df(self, quantity_label, identifiers_perc):
         quantity_df = pd.DataFrame(columns=["Identifier", "Quantity"])
-        quantities = pd.read_json("{}/quantities.json".format(self.result_folder_base_path))
+        quantities = pd.read_json("{}quantities.json".format(self.result_folder_base_path))
         row = quantities.loc[quantities["Quantity"] == quantity_label]
         row = row.reset_index()
         identifiers = row.at[0, "Identifiers"]
@@ -87,15 +91,10 @@ class ReadersourcingToolkit:
             identifiers_amount = round((len(identifiers) * identifiers_perc) / 100)
             identifiers = identifiers[:identifiers_amount]
         quantity = row.at[0, "Values"]
-        counter = 0
         for index, identifier in enumerate(identifiers):
             quantity_df = quantity_df.append({"Identifier": identifier, "Quantity": quantity[index]}, ignore_index=True)
-            counter = counter + 1
-            percentage = 100 * counter / len(identifiers)
-            if percentage % 10 == 0:
-                print("{}/{} ({}/100%)".format(int(counter), len(identifiers), int(percentage)))
         quantity_df["Identifier"] = quantity_df["Identifier"].astype(int)
-        print("{}/{} (100/100%)".format(len(identifiers), len(identifiers)))
+        print("{}/{} (100/100%)".format(self.shuffle_amount, self.shuffle_amount))
         return quantity_df
 
     # Returns a dataframe with three columns
@@ -111,7 +110,7 @@ class ReadersourcingToolkit:
             if percentage % 5 == 0:
                 print("{}/{} ({}/100%)".format(int(index_shuffle), self.shuffle_amount, int(percentage)))
             quantities = pd.read_json(
-                "{}/shuffle/shuffle_{}/quantities.json".format(self.result_folder_base_path, index_shuffle))
+                "{}shuffle_{}/quantities.json".format(self.result_shuffle_base_path, index_shuffle))
             row = quantities.loc[quantities["Quantity"] == quantity]
             row = row.reset_index()
             identifiers = row.at[0, "Identifiers"]
