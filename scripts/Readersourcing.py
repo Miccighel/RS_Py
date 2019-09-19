@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[3]:
 
 
 import pandas as pd
@@ -248,7 +248,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
     # print("##########")
         
     start_time = time.time()
-    
+      
     for index in range(csv_offset, (ratings_number + csv_offset)):
         
         if parameters.days_serialization:
@@ -270,7 +270,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
         percentage = 100*index/ratings_number
         if percentage % 5 == 0:
             print("{}/{} ({}/100%)".format(int(index), ratings_number, int(percentage)))
-                    
+                        
         entry = linecache.getline(ratings_filename, index).split(",")
         
         # Example: <1,1,2,0.8,0>
@@ -460,7 +460,7 @@ except ValueError as error:
     print(repr(error))
 
 
-# In[ ]:
+# In[4]:
 
 
 
@@ -469,21 +469,20 @@ except ValueError as error:
 # ------------------------------
 
 seed = ReadersourcingToolkit(
-    dataset_name="seed", 
+    dataset_name="seed_power_law_test", 
     dataset_folder_path="../data/{}/", 
     data_shuffled=True, 
     current_shuffle = 0,
-    shuffle_amount=100
+    shuffle_amount=5
 )
  
-try:
-   for index_shuffle in range(seed.shuffle_amount):
-       print("---------------------------------")
-       print("----------- SHUFFLE {} -----------".format(index_shuffle))
-       seed.current_shuffle = index_shuffle
-       readersourcing(seed)
-except ValueError as error:
-   print(repr(error))
+
+for index_shuffle in range(seed.shuffle_amount):
+   print("---------------------------------")
+   print("----------- SHUFFLE {} -----------".format(index_shuffle))
+   seed.current_shuffle = index_shuffle
+   readersourcing(seed)
+
    
 
 
