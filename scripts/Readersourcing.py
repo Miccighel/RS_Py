@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[29]:
 
 
 import pandas as pd
@@ -45,9 +45,9 @@ def readersourcing(parameters : ReadersourcingToolkit):
     
     # CSV file parsing
     
-    info_filename = "{}info.csv".format(parameters.dataset_entries_path)
-    ratings_filename = "{}ratings.csv".format(parameters.dataset_entries_path)
-    authors_filename = "{}authors.csv".format(parameters.dataset_entries_path)
+    ratings_filename = parameters.ratings_filename
+    info_filename = parameters.info_filename
+    authors_filename = parameters.authors_filename
     
     info = pd.read_csv(info_filename)
     paper_authors = pd.read_csv(authors_filename)
@@ -88,7 +88,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
     # Data shuffling handling
     
     if parameters.data_shuffled:
-        ratings_filename = "{}shuffle_{}.csv".format(parameters.dataset_shuffle_path, parameters.current_shuffle)
+        ratings_filename = "{}{}".format(parameters.dataset_shuffle_path, parameters.shuffle_filename)
     
     # Output handling
     
@@ -114,10 +114,10 @@ def readersourcing(parameters : ReadersourcingToolkit):
     def serialize_result(current_index, verbose, parameters):
                          
         if parameters.data_shuffled:
-            result_folder_path = "{}shuffle_{}/".format(parameters.result_shuffle_base_path, parameters.current_shuffle)
+            result_folder_path = "{}{}".format(parameters.result_shuffle_base_path, parameters.result_shuffle_folder)
         else:
             if parameters.days_serialization:
-                result_folder_path = "{}day_{}/".format(parameters.result_days_path, parameters.current_day)
+                result_folder_path = "{}{}".format(parameters.result_days_base_path, parameters.result_day_folder)
             else:
                 result_folder_path = parameters.result_folder_base_path
         
@@ -134,7 +134,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
             {'Quantity': 'Author Score', 'Identifiers': authors.tolist(), 'Values': author_score.tolist()},
         ]
         
-        result_quantities_filename = "{}quantities.json".format(result_folder_path, parameters.current_day)
+        result_quantities_filename = "{}{}".format(result_folder_path, parameters.result_quantities_filename)
         
         if verbose:
             print("------------------------------")
@@ -163,8 +163,8 @@ def readersourcing(parameters : ReadersourcingToolkit):
             rating_matrix[current_reader][current_paper] = current_rating
             goodness_matrix[current_reader][current_paper] = rating_goodness[current_timestamp]
         
-        result_ratings_filename = "{}ratings.csv".format(result_folder_path, parameters.current_day)
-        result_goodness_filename = "{}goodness.csv".format(result_folder_path, parameters.current_day)
+        result_ratings_filename = "{}{}".format(result_folder_path, parameters.result_ratings_filename)
+        result_goodness_filename = "{}{}".format(result_folder_path, parameters.result_goodness_filename)
         
         if verbose:
             print("PRINTING RATING MATRIX TO .CSV FILE AT PATH {}".format(result_ratings_filename))
@@ -195,7 +195,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
         
         dictionary = [{'Time': result_elapsed_time}]
         
-        result_info_filename = "{}info.json".format(result_folder_path, parameters.current_day)
+        result_info_filename = "{}{}".format(result_folder_path, parameters.result_info_filename)
         
         if verbose:
             print("PRINTING INFO TO .JSON FILE AT PATH {}".format(result_info_filename))
@@ -241,7 +241,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
                     args=[file_path],
                 )
                 thread.daemon = True
-                thread.start()
+                thread.start()       
         print("--------------------------------------")
     
     # There are many "print" that you can uncomment if you have to do some debugging
@@ -254,6 +254,7 @@ def readersourcing(parameters : ReadersourcingToolkit):
         if parameters.days_serialization:
             if index % (ratings_number_per_day * computed_days) == 0:
                 parameters.current_day = computed_days
+                parameters.update_day()
                 written = False
                 cleaned = False
                 if parameters.days_serialization_cleaning and computed_days % parameters.days_cleaning_threshold == 0 and not cleaned:
@@ -389,6 +390,21 @@ def readersourcing(parameters : ReadersourcingToolkit):
         # print("##########")
     
     elapsed_time, result_file_paths = serialize_result(ratings_number, verbose=True, parameters=parameters)
+    
+    if parameters.days_serialization:
+        for root, dirs, files in os.walk(parameters.result_days_base_path, topdown=False):
+                for name in dirs:
+                    try:
+                        if len(os.listdir( os.path.join(root, name) )) == 0: #check whether the directory is empty
+                            print( "Deleting empty folder: ", os.path.join(root, name) )
+                            try:
+                                os.rmdir( os.path.join(root, name) )
+                            except:
+                                pass
+                    except:
+                        pass
+        print("--------------------------------------")
+    
     print("ELAPSED TIME: ", elapsed_time)
     
     # ----- ALGORITHM ENDS HERE ----- #
@@ -413,6 +429,24 @@ def readersourcing(parameters : ReadersourcingToolkit):
 # ------------------------------
 
 seed = ReadersourcingToolkit(
+   dataset_name="ground_truth_1", 
+   dataset_folder_path="../data/{}/",
+)
+try:
+   readersourcing(seed)
+except ValueError as error:
+     print(repr(error))
+     
+
+
+# In[ ]:
+
+
+# ------------------------------
+# ---------- SAMPLE 2 ----------
+# ------------------------------
+
+seed = ReadersourcingToolkit(
    dataset_name="ground_truth_2", 
    dataset_folder_path="../data/{}/",
 )
@@ -422,28 +456,7 @@ except ValueError as error:
      print(repr(error))
 
 
-# In[6]:
-
-
-# ------------------------------
-# ---------- SAMPLE 2 ----------
-# ------------------------------
-
-seed = ReadersourcingToolkit(
-    dataset_name="seed_1/p_1_beta", 
-    dataset_folder_path="../data/{}/", 
-    days_serialization=True,
-    days_number=30,
-    days_serialization_threshold=5,
-)
-   
-try:
-   readersourcing(seed)
-except ValueError as error:
-    print(repr(error))
-
-
-# In[ ]:
+# In[3]:
 
 
 # ------------------------------
@@ -451,54 +464,11 @@ except ValueError as error:
 # ------------------------------
 
 seed = ReadersourcingToolkit(
-    dataset_name="seed_1/p_1_beta", 
-    dataset_folder_path="../data/{}/", 
-)
-try:
-   readersourcing(seed)
-except ValueError as error:
-    print(repr(error))
-
-
-# In[4]:
-
-
-
-# ------------------------------
-# ---------- SAMPLE 4 ----------
-# ------------------------------
-
-seed = ReadersourcingToolkit(
-    dataset_name="seed_power_law_test", 
+    dataset_name="seed_power_law_1", 
     dataset_folder_path="../data/{}/", 
     data_shuffled=True, 
     current_shuffle = 0,
-    shuffle_amount=5
-)
- 
-
-for index_shuffle in range(seed.shuffle_amount):
-   print("---------------------------------")
-   print("----------- SHUFFLE {} -----------".format(index_shuffle))
-   seed.current_shuffle = index_shuffle
-   readersourcing(seed)
-
-   
-
-
-# In[5]:
-
-
-# ------------------------------
-# ---------- SAMPLE 5 ----------
-# ------------------------------
-
-seed = ReadersourcingToolkit(
-     dataset_name="seed_shuffle_1_special", 
-     dataset_folder_path="../data/{}/", 
-     data_shuffled=True, 
-     current_shuffle = 0,
-     shuffle_amount=100
+    shuffle_amount=100
 )
   
 try:
@@ -509,27 +479,32 @@ try:
         readersourcing(seed)
 except ValueError as error:
      print(repr(error))
+     
 
 
-# In[ ]:
+# In[30]:
+
 
 
 # ------------------------------
-# ---------- SAMPLE 6 ----------
+# ---------- SAMPLE 4 ----------
 # ------------------------------
 
 seed = ReadersourcingToolkit(
     dataset_name="seed_power_law_1", 
     dataset_folder_path="../data/{}/", 
+    data_shuffled=True, 
+    current_shuffle = 0,
+    shuffle_amount=100,
+    shuffle_special=True
 )
+  
 try:
+    for index_shuffle in range(seed.shuffle_amount):
+   print("---------------------------------")
+   print("----------- SHUFFLE {} -----------".format(index_shuffle))
+   seed.current_shuffle = index_shuffle
    readersourcing(seed)
 except ValueError as error:
-    print(repr(error))
-
-
-# In[ ]:
-
-
-
+print(repr(error))
 

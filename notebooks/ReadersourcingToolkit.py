@@ -20,6 +20,7 @@ class ReadersourcingToolkit:
             data_shuffled=False,
             shuffle_amount=0,
             current_shuffle=0,
+            shuffle_special=False,
             result_compression=False,
             archive_name="archive"
     ):
@@ -38,12 +39,30 @@ class ReadersourcingToolkit:
         self.data_shuffled = data_shuffled
         self.shuffle_amount = shuffle_amount
         self.current_shuffle = current_shuffle
+        self.shuffle_special = shuffle_special
+        if self.shuffle_special:
+            self.dataset_shuffle_path = "{}/shuffle_special/".format(self.dataset_folder_path)
         self.result_compression = result_compression
         self.archive_name = archive_name
 
+        self.info_filename = "{}info.csv".format(self.dataset_entries_path)
+        self.ratings_filename = "{}ratings.csv".format(self.dataset_entries_path)
+        self.authors_filename = "{}authors.csv".format(self.dataset_entries_path)
+        self.shuffle_filename = "shuffle_{}.csv".format(self.current_shuffle)
+        if self.shuffle_special:
+            self.info_filename = "{}info_special.csv".format(self.dataset_entries_path)
         self.result_folder_base_path = "../models/{}/readersourcing/".format(dataset_name)
-        self.result_days_path = "{}days/".format(self.result_folder_base_path)
-        self.result_shuffle_base_path = "{}shuffle/".format(self.result_folder_base_path)
+        self.result_quantities_filename = "quantities.json"
+        self.result_ratings_filename = "ratings.csv"
+        self.result_goodness_filename = "goodness.csv"
+        self.result_info_filename = "info.json"
+        self.result_days_base_path = "{}days/".format(self.result_folder_base_path)
+        self.result_day_folder = "day_{}/".format(self.current_day)
+        if self.shuffle_special:
+            self.result_shuffle_base_path = "{}shuffle_special/".format(self.result_folder_base_path)
+        else:
+            self.result_shuffle_base_path = "{}shuffle/".format(self.result_folder_base_path)
+        self.result_shuffle_folder = "shuffle_{}/".format(self.current_shuffle)
         paths = []
         for shuffle_index in range(shuffle_amount):
             paths.append("{}shuffle_{}/".format(self.result_shuffle_base_path, shuffle_index))
@@ -52,6 +71,9 @@ class ReadersourcingToolkit:
     # ----------------------------------------------
     # ---------- OUTPUT HANDLING METHODS  ----------
     # ----------------------------------------------
+
+    def update_day(self):
+        self.result_day_folder = "day_{}/".format(self.current_day)
 
     # Returns a dataframe with one column
     # First column: identifiers of the chosen entity
