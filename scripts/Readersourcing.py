@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[29]:
+# In[2]:
 
 
 import pandas as pd
@@ -456,11 +456,29 @@ except ValueError as error:
      print(repr(error))
 
 
-# In[3]:
+# In[4]:
 
 
 # ------------------------------
 # ---------- SAMPLE 3 ----------
+# ------------------------------
+
+seed = ReadersourcingToolkit(
+    dataset_name="seed_power_law_1", 
+    dataset_folder_path="../data/{}/", 
+)
+  
+try:
+    readersourcing(seed)
+except ValueError as error:
+     print(repr(error))
+
+
+# In[3]:
+
+
+# ------------------------------
+# ---------- SAMPLE 4 ----------
 # ------------------------------
 
 seed = ReadersourcingToolkit(
@@ -482,12 +500,12 @@ except ValueError as error:
      
 
 
-# In[30]:
+# In[7]:
 
 
 
 # ------------------------------
-# ---------- SAMPLE 4 ----------
+# ---------- SAMPLE 5 ----------
 # ------------------------------
 
 seed = ReadersourcingToolkit(
@@ -498,7 +516,7 @@ seed = ReadersourcingToolkit(
     shuffle_amount=100,
     shuffle_special=True
 )
-  
+
 try:
     for index_shuffle in range(seed.shuffle_amount):
    print("---------------------------------")
