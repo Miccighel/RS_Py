@@ -75,6 +75,10 @@ class ReadersourcingToolkit:
     def update_day(self):
         self.result_day_folder = "day_{}/".format(self.current_day)
 
+    def update_shuffle(self, current_shuffle):
+        self.current_shuffle = current_shuffle
+        self.result_shuffle_folder = "shuffle_{}/".format(self.current_shuffle)
+
     # Returns a dataframe with one column
     # First column: identifiers of the chosen entity
     def extract_identifiers(self, entity):

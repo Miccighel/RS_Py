@@ -493,7 +493,7 @@ try:
     for index_shuffle in range(seed.shuffle_amount):
         print("---------------------------------")
         print("----------- SHUFFLE {} -----------".format(index_shuffle))
-        seed.current_shuffle = index_shuffle
+        seed.update_shuffle(index_shuffle)
         readersourcing(seed)
 except ValueError as error:
      print(repr(error))
@@ -521,7 +521,7 @@ try:
     for index_shuffle in range(seed.shuffle_amount):
    print("---------------------------------")
    print("----------- SHUFFLE {} -----------".format(index_shuffle))
-   seed.current_shuffle = index_shuffle
+   seed.update_shuffle(index_shuffle)
    readersourcing(seed)
 except ValueError as error:
 print(repr(error))

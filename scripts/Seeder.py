@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[2]:
 
 
 import pandas as pd
@@ -71,7 +71,7 @@ def truncated_power_law(a, m):
     return stats.rv_discrete(values=(range(1, m+1), pmf))
 
 
-# In[9]:
+# In[3]:
 
 
 # ------------------------------
@@ -127,7 +127,7 @@ print("Etc.")
 print("---------- INTER-READERS DISTRIBUTION GENERATION COMPLETED ----------")
 
 
-# In[10]:
+# In[4]:
 
 
 print("---------- INTER-PAPERS DISTRIBUTION GENERATION STARTED ----------")
@@ -174,7 +174,7 @@ print("Etc.")
 print("---------- INTER-PAPERS DISTRIBUTION GENERATION COMPLETED ----------")
 
 
-# In[11]:
+# In[5]:
 
 
 print("---------- READER-PAPER MATRIX GENERATION STARTED ----------")
@@ -294,7 +294,7 @@ print("True Power Law Plot (Papers) Saved at Path: {}".format(path_papers))
 print("---------- READER-PAPER MATRIX GENERATION COMPLETED ----------")
 
 
-# In[12]:
+# In[6]:
 
 
 print("---------- INTRA-PAPER DISTRIBUTIONS GENERATION STARTED ----------")
@@ -365,7 +365,7 @@ print("{}/{} (100/100%)".format(papers_number, papers_number))
 print("---------- INTRA-PAPER DISTRIBUTIONS GENERATION COMPLETED ----------")
 
 
-# In[13]:
+# In[7]:
 
 
 print("---------- RATINGS GENERATION STARTED ----------")
@@ -408,7 +408,7 @@ print("Ratings Timeserie Saved at Path: {}".format(ratings_file_path))
 print("---------- RATINGS GENERATION ENDED ----------")
 
 
-# In[14]:
+# In[8]:
 
 
 # Authors file generation
@@ -459,7 +459,7 @@ print("Info File Saved at Path: {}".format(info_file_path))
 print("---------- INFO GENERATION ENDED ----------")
 
 
-# In[15]:
+# In[9]:
 
 
 # Stats file generation
@@ -536,7 +536,7 @@ print("Stats File Saved at Path: {}".format(stats_file_path))
 print("---------- STATS GENERATION COMPLETED ----------")
 
 
-# In[16]:
+# In[10]:
 
 
 # Data generation for experiments
@@ -631,7 +631,7 @@ if add_special_ratings:
 print("---------- SPECIAL RATINGS COMPLETED  ----------")
 
 
-# In[17]:
+# In[11]:
 
 
 # ------------------------------
