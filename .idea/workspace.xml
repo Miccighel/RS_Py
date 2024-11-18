@@ -4,7 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4028ba8b-1b7b-4699-bb92-62cebc0fa557" name="Changes" comment="" />
+    <list default="true" id="4028ba8b-1b7b-4699-bb92-62cebc0fa557" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/models/ground_truth_1/readersourcing/goodness.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/ground_truth_1/readersourcing/info.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/ground_truth_1/readersourcing/quantities.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/ground_truth_1/readersourcing/ratings.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/seed_power_law_1.zip" beforeDir="false" afterPath="$PROJECT_DIR$/data/seed_power_law_1.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/ground_truth_2/readersourcing/info.json" beforeDir="false" afterPath="$PROJECT_DIR$/models/ground_truth_2/readersourcing/info.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/seed_power_law_1.zip" beforeDir="false" afterPath="$PROJECT_DIR$/models/seed_power_law_1.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/seed_power_law_batch.zip" beforeDir="false" afterPath="$PROJECT_DIR$/models/seed_power_law_batch.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Experiments.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Readersourcing.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/ReadersourcingToolkit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/ReadersourcingToolkit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Seeder.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/TrueReview.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/Experiments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/Readersourcing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/ReadersourcingToolkit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/Seeder.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/TrueReview.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -30,6 +51,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "/Users/michaelsoprano/Dropbox/Lavoro/Progetti/Readersourcing-2.0/Sorgenti/RS_Py",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -42,7 +64,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-50da183f06c8-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13135.95" />
+        <option value="bundled-python-sdk-80a6976e5986-7ba1f540c4e9-com.jetbrains.pycharm.ds.sharedIndexes.bundled-DS-242.22855.78" />
       </set>
     </attachedChunks>
   </component>

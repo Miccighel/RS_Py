@@ -89,7 +89,11 @@ class ReadersourcingToolkit:
         else:
             identifiers = quantities.at[3, "Identifiers"]
         for index, identifier in enumerate(identifiers):
-            identifiers_df = identifiers_df.append({"Identifier": identifier}, ignore_index=True)
+            # Create a DataFrame for the new row
+            new_row = pd.DataFrame([{"Identifier": identifier}])
+
+            # Concatenate the new row to the existing DataFrame
+            identifiers_df = pd.concat([identifiers_df, new_row], ignore_index=True)
             identifiers_df["Identifier"] = identifiers_df["Identifier"].astype(int)
         return identifiers_df
 
@@ -118,7 +122,11 @@ class ReadersourcingToolkit:
             identifiers = identifiers[:identifiers_amount]
         quantity = row.at[0, "Values"]
         for index, identifier in enumerate(identifiers):
-            quantity_df = quantity_df.append({"Identifier": identifier, "Quantity": quantity[index]}, ignore_index=True)
+            # Create a new row as a DataFrame
+            new_row = pd.DataFrame([{"Identifier": identifier, "Quantity": quantity[index]}])
+
+            # Use pd.concat to append the new row to quantity_df
+            quantity_df = pd.concat([quantity_df, new_row], ignore_index=True)
         quantity_df["Identifier"] = quantity_df["Identifier"].astype(int)
         return quantity_df
 
@@ -143,16 +151,22 @@ class ReadersourcingToolkit:
                 identifiers_amount = round((len(identifiers) * identifiers_perc) / 100)
                 identifiers = identifiers[:identifiers_amount]
             quantity = row.at[0, "Values"]
+
+            # List to accumulate rows
+            rows = []
+
+            # Loop through identifiers and process the quantity
             for index, identifier in enumerate(identifiers):
-                if dump_zeros:
-                    if quantity[index] > 0:
-                        quantity_df = quantity_df.append(
-                            {"Shuffle": index_shuffle, "Identifier": identifier, "Quantity": quantity[index]},
-                            ignore_index=True)
-                else:
-                    quantity_df = quantity_df.append(
-                        {"Shuffle": index_shuffle, "Identifier": identifier, "Quantity": quantity[index]},
-                        ignore_index=True)
+                if not dump_zeros or quantity[index] > 0:
+                    rows.append({
+                        "Shuffle": index_shuffle,
+                        "Identifier": identifier,
+                        "Quantity": quantity[index]
+                    })
+
+            # After the loop, create the DataFrame from the rows list
+            quantity_df = pd.DataFrame(rows)
+
         quantity_df["Shuffle"] = quantity_df["Shuffle"].astype(int)
         quantity_df["Identifier"] = quantity_df["Identifier"].astype(int)
         print("{}/{} (100/100%)".format(self.shuffle_amount, self.shuffle_amount))

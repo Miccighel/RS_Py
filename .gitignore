@@ -15,9 +15,6 @@ __pycache__/
 venv/
 env/
 
-# Jupyter Notebooks
-*.ipynb
-
 # Jupyter lab settings
 /lab/
 /lab/*
